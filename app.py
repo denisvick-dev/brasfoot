@@ -11,7 +11,12 @@ Inter             → tabelas e dados (com tabular-nums para alinhar)
 
 import streamlit as st
 
-from game.banco_dados import criar_times
+from game.banco_dados import (
+    DIVISOES,
+    NOMES_DIVISAO,
+    clubes_por_divisao,
+    criar_times,
+)
 from game.competicoes import (
     FORMATOS,
     Campeonato,
@@ -599,13 +604,33 @@ def tela_inicial():
         unsafe_allow_html=True,
     )
 
-    secao("Escolha seu time para começar a temporada", "Temporada 2024")
-
-    # times do banco + clubes criados pelo jogador
+    # banco completo (156 clubes) — a divisão escolhida vira o campeonato
     if st.session_state.times is None:
-        st.session_state.times = criar_times()
+        st.session_state.times = criar_times(None)
 
-    times = list(st.session_state.times)
+    banco = list(st.session_state.times)
+
+    col_div, col_info = st.columns([1, 3])
+    with col_div:
+        divisao = (
+            st.selectbox(
+                "Divisão",
+                list(DIVISOES),
+                index=0,
+                format_func=lambda d: NOMES_DIVISAO.get(d, str(d)),
+                key="divisao_inicial",
+            )
+            or "A"
+        )
+    times = [t for t in banco if t.divisao == divisao]
+    with col_info:
+        st.caption(
+            f"**{NOMES_DIVISAO.get(divisao, divisao)}** — {len(times)} clubes. "
+            f"O campeonato é disputado só entre os clubes da divisão escolhida."
+        )
+
+    secao("Escolha seu time para começar a temporada", NOMES_DIVISAO.get(divisao, divisao))
+
     custom = [
         t
         for t in st.session_state.get("clubes_custom", [])
@@ -648,7 +673,7 @@ def tela_inicial():
                 )
                 if st.button(
                     f"Escolher {time.sigla}",
-                    key=f"btn_{time.id}",
+                    key=f"btn_{time.sigla}_{idx}",
                     use_container_width=True,
                     type="primary",
                 ):
@@ -1366,8 +1391,8 @@ def tela_classificacao():
         f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
         <h1 style="font-size:1.8rem">🏆 Classificação</h1>
-        <p>Brasileirão Série A · Temporada {league.temporada} ·
-        Rodada {league.rodada_atual}/{league.total_rodadas}</p>
+        <p>{NOMES_DIVISAO.get(time.divisao, "Brasileirão") if time else "Brasileirão"} ·
+        Temporada {league.temporada} · Rodada {league.rodada_atual}/{league.total_rodadas}</p>
     </div>
     """,
         unsafe_allow_html=True,
@@ -1679,7 +1704,9 @@ def tela_criador():
 
             c14, c15, c16 = st.columns(3)
             tamanho = c14.slider("Jogadores no elenco", 11, 30, 22)
-            divisao = c15.selectbox("Divisão", ["A", "B", "C"])
+            divisao = c15.selectbox(
+                "Divisão", list(DIVISOES), format_func=lambda d: NOMES_DIVISAO[d]
+            )
             formacao = c16.selectbox(
                 "Formação", ["4-4-2", "4-3-3", "3-5-2", "4-5-1", "5-3-2"]
             )
@@ -1865,7 +1892,7 @@ def tela_criador():
         banco, custom = pool_de_times()
         opcoes = custom + banco
 
-        nome_c = st.text_input("Nome do campeonato*", placeholder="Copa Aurora 2024")
+        nome_c = st.text_input("Nome do campeonato*", placeholder="Copa Aurora 2026")
         formato = st.radio(
             "Formato",
             list(FORMATOS),
@@ -1876,16 +1903,25 @@ def tela_criador():
         st.markdown(
             '<div class="club-meta">Seleção rápida:</div>', unsafe_allow_html=True
         )
-        atalhos = st.columns(5)
-        if atalhos[0].button("Série A (20)"):
-            st.session_state.sel_times = banco[:20]
-        if atalhos[1].button("Séries A+B (40)"):
-            st.session_state.sel_times = banco[:40]
-        if atalhos[2].button("Todos (61)"):
+        por_divisao = {
+            d: [c.nome for c in clubes_por_divisao(d)] for d in DIVISOES
+        }
+        atalhos = st.columns(4)
+        if atalhos[0].button(f"Série A ({len(por_divisao['A'])})"):
+            st.session_state.sel_times = por_divisao["A"]
+        if atalhos[1].button(f"Série B ({len(por_divisao['B'])})"):
+            st.session_state.sel_times = por_divisao["B"]
+        if atalhos[2].button(f"Série C ({len(por_divisao['C'])})"):
+            st.session_state.sel_times = por_divisao["C"]
+        if atalhos[3].button(f"Série D ({len(por_divisao['D'])})"):
+            st.session_state.sel_times = por_divisao["D"]
+
+        atalhos2 = st.columns(3)
+        if atalhos2[0].button(f"Todo o banco ({len(banco)})"):
             st.session_state.sel_times = list(banco)
-        if atalhos[3].button("Meus clubes"):
+        if atalhos2[1].button("Meus clubes"):
             st.session_state.sel_times = list(custom)
-        if atalhos[4].button("Limpar"):
+        if atalhos2[2].button("Limpar"):
             st.session_state.sel_times = []
 
         # a seleção vive na sessão (os atalhos acima escrevem nela)

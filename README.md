@@ -6,7 +6,8 @@ main.py              demo: roda uma temporada inteira no terminal
 diagnostico.py       calibração: mede o motor contra metas do futebol real
 game/__init__.py
 game/modelos.py      Jogador, Time, Partida, Noticia
-game/banco_dados.py  base de clubes (61 times em 3 divisões) + geração de elencos
+game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
+game/banco_dados.py  elencos a partir das fichas + API de consulta
 game/dados.py        alias -> game.banco_dados (compatibilidade)
 game/jogo_engine.py  MatchEngine (simulação de partidas)
 game/campeonato.py   League (calendário, rodadas, classificação)
@@ -23,7 +24,7 @@ streamlit run app.py      # interface do jogo
 
 python main.py            # Brasileirão com 20 clubes (Série A)
 python main.py 24         # 24 clubes
-python main.py 61         # banco inteiro (122 rodadas, ~1,5s)
+python main.py 156        # banco inteiro, 4 divisões (~9s)
 python main.py 20 7       # semente 7 (reproduzível)
 
 python diagnostico.py     # mede gols/jogo, empates, mando de campo etc.
@@ -32,20 +33,34 @@ python shots.py           # screenshots das telas ( precisa do app rodando + pla
 
 ## Banco de dados
 
-61 clubes em 3 divisões: 20 na Série A, 20 na Série B, 21 na Série C/regional.
+156 clubes em 4 divisões, a pirâmide do futebol brasileiro de 2026:
+
+| Divisão | Clubes |
+|---|---|
+| Série A | 20 |
+| Série B | 20 |
+| Série C | 20 |
+| Série D | 96 |
+
 Cada clube tem ficha completa (`Clube`): cidade, estado, escudo, cores, faixa de
 força do elenco, finanças, torcida, reputação, **divisão, estádio, capacidade,
-fundação e rival**.
+fundação e rival**. As fichas ficam em `game/clubes.py`; `game/banco_dados.py`
+transforma ficha em `Time` (gerando o elenco).
 
 ```python
 criar_times()                            # 20 clubes (padrão antigo)
 criar_times(24)                          # A + os melhores da B
 criar_times(divisao="B")                 # só uma divisão
-criar_times(None)                        # todos os 61
+criar_times(None)                        # todos os 156
 criar_times(32, aleatorio=True, semente=7)
-criar_todas_divisoes()                   # {"A": [...], "B": [...], "C": [...]}
+criar_todas_divisoes()                   # {"A": [...], "B": [...], "C": [...], "D": [...]}
 buscar_clube("FLA")                      # ficha completa do clube
+clubes_por_divisao("D")                  # fichas de uma divisão
+resumo_banco()                           # contagem por divisão
 ```
+
+Na interface, o seletor **Divisão** da tela inicial define qual campeonato é
+disputado (Série A por padrão); o banco inteiro fica carregado em memória.
 
 ## Correções aplicadas
 
@@ -103,7 +118,7 @@ Medido em 5 temporadas de 20 clubes (`diagnostico.py`):
 | Correlação overall x pontos | +0,19 | **+0,71** | ≥ 0,55 |
 | Artilheiro (38 rodadas) | 9 gols | **15 gols** | — |
 | Energia média (sistema inerte) | 97 | **77** | — |
-| Times com caixa negativo (61 clubes) | 29 | **4** | — |
+| Times com caixa negativo (banco de 61 clubes da época) | 29 | **4** | — |
 | Jogos com público acima da capacidade | 227 | **0** | — |
 
 Outras mudanças:
@@ -138,10 +153,14 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
 
 ## Observações
 
-- Com 61 clubes o round-robin usa **BYE** (rodada de folga) e a temporada tem
-  122 rodadas — `proximo_adversario()` devolve `"Folga"` nesses casos.
-- Numa temporada longa (61 clubes), 3 ou 4 clubes pequenos podem terminar com
-  caixa negativo; é o comportamento esperado da régua econômica atual.
+- Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
+  `proximo_adversario()` devolve `"Folga"` nesses casos.
+- O calendário é sempre turno e returno: 20 clubes = 38 rodadas, mas a Série D
+  (96 clubes) viraria 190 rodadas. Por isso o padrão do jogo continua sendo a
+  Série A, e o seletor de divisão da tela inicial serve para escolher o
+  campeonato a disputar.
+- Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa
+  negativo; é o comportamento esperado da régua econômica atual.
 - `is_player_home` / `is_player_away` continuam sem uso dentro de `simular()` —
   ficaram disponíveis para a interface (narração, escalação do jogador).
 
