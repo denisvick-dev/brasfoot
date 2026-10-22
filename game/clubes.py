@@ -375,7 +375,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Frasqueirão", 18_000, 1915, "ARN",
     ),
     Clube(
-        "ABECAT", "ABE", "Ouvidor", "GO", "🔵⚪", "#1565C0", "#FFFFFF",
+        "ABECAT", "ABE", "Ouvidor", "GO", "🟠⚫", "#E64A19", "#1A1A1A",
         26, 46, 400_000, 2, 36,
         "D", "Estádio Municipal de Ouvidor", 5_000, 2019, "GOA",
     ),
@@ -385,7 +385,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Felipe Raulino", 4_000, 2013, "PIA",
     ),
     Clube(
-        "America-RJ", "AMR", "Rio de Janeiro", "RJ", "🔴⚪", "#C62828", "#FFFFFF",
+        "America-RJ", "AMR", "Rio de Janeiro", "RJ", "🔴⚪", "#C8102E", "#FFFFFF",
         30, 52, 1_000_000, 12, 46,
         "D", "Edson Passos", 13_000, 1904, "MAD",
     ),
@@ -395,7 +395,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Arena das Dunas", 32_000, 1915, "ABC",
     ),
     Clube(
-        "Aparecidense", "APD", "Aparecida de Goiânia", "GO", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Aparecidense", "APD", "Aparecida de Goiânia", "GO", "🟡🔵", "#D9B44A", "#1B3A6B",
         32, 52, 1_000_000, 5, 44,
         "D", "Annibal Batista de Toledo", 8_000, 1985, "CRAC",
     ),
@@ -410,7 +410,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Coaracy da Mata Fonseca", 17_500, 1952, "CSA",
     ),
     Clube(
-        "Atlético-CE", "ATC", "Fortaleza", "CE", "🔴⚫", "#C62828", "#212121",
+        "Atlético-CE", "ATC", "Fortaleza", "CE", "🔴⚫", "#C8102E", "#212121",
         30, 52, 900_000, 5, 44,
         "D", "Presidente Vargas", 20_000, 1997, "FLO",
     ),
@@ -430,7 +430,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Betim", 10_000, 2011, "DGV",
     ),
     Clube(
-        "Blumenau", "BLU", "Blumenau", "SC", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Blumenau", "BLU", "Blumenau", "SC", "🟢🔴", "#0F6B3E", "#7A1230",
         28, 48, 500_000, 3, 38,
         "D", "Estádio Municipal de Blumenau", 8_000, 2020, "MDI",
     ),
@@ -440,7 +440,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Bento Freitas", 18_000, 1911, "JUV",
     ),
     Clube(
-        "Brasiliense", "BRA", "Taguatinga", "DF", "🟡⚪", "#F9A825", "#FFFFFF",
+        "Brasiliense", "BRA", "Taguatinga", "DF", "🟡⚫", "#F4C300", "#212121",
         30, 50, 1_000_000, 5, 44,
         "D", "Serejão", 30_000, 2000, "GAM",
     ),
@@ -710,7 +710,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Laranjeiras", 8_000, 1924, "NIG",
     ),
     Clube(
-        "Pouso Alegre", "POU", "Pouso Alegre", "MG", "🟡⚫", "#F9A825", "#212121",
+        "Pouso Alegre", "POU", "Pouso Alegre", "MG", "🔴⚫", "#C8102E", "#212121",
         28, 48, 600_000, 4, 40,
         "D", "Manduzão", 10_000, 1991, "DGV",
     ),

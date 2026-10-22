@@ -142,15 +142,17 @@ sem servidor de estáticos.
 
 | Origem | Clubes |
 |---|---|
-| PNG oficial | 111 |
+| PNG oficial | 118 |
 | SVG importado (Séries A/B) | 4 |
-| SVG genérico (duas cores + sigla) | 41 |
+| SVG genérico (cores do clube + sigla) | 34 |
 
-Os 41 escudos genéricos são de clubes da Série D que não têm imagem pública
+Os 34 escudos genéricos são de clubes da Série D que não têm imagem pública
 indexada; foram desenhados por `scripts/gerar_escudos.py` no estilo "escudo
 genérico" dos jogos de futebol: contorno de escudo, listras nas cores do clube,
 faixa clara com a sigla e um leve gradiente de volume — o mesmo desenho para
-todos, para não parecer imagem quebrada ao lado dos escudos oficiais.
+todos, para não parecer imagem quebrada ao lado dos escudos oficiais. À medida
+que um escudo real é adicionado (`assets/escudos/<SIGLA>.png`), o PNG tem
+precedência e o SVG genérico daquele clube pode ser apagado.
 
 Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
 transparente). Para criar um clube novo sem imagem:
