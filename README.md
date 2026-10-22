@@ -8,6 +8,7 @@ game/__init__.py
 game/modelos.py      Jogador, Time, Partida, Noticia
 game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
 game/banco_dados.py  elencos a partir das fichas + API de consulta
+game/piramide.py     temporada com as 4 divisões + acesso e descenso
 game/escudos.py      escudos de assets/escudos/ embutidos como data URI
 assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
 scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
@@ -194,14 +195,86 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
 
 - Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
   `proximo_adversario()` devolve `"Folga"` nesses casos.
-- O calendário é sempre turno e returno: 20 clubes = 38 rodadas, mas a Série D
-  (96 clubes) viraria 190 rodadas. Por isso o padrão do jogo continua sendo a
-  Série A, e o seletor de divisão da tela inicial serve para escolher o
-  campeonato a disputar.
+- O calendário é sempre turno e returno: Série A/B/C têm 38 rodadas e a Série D
+  (96 clubes) tem 190. As quatro divisões correm juntas; quando a sua termina,
+  o botão "Simular o restante das outras divisões" fecha a temporada.
 - Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa
   negativo; é o comportamento esperado da régua econômica atual.
 - `is_player_home` / `is_player_away` continuam sem uso dentro de `simular()` —
   ficaram disponíveis para a interface (narração, escalação do jogador).
+
+## Temporada com as quatro divisões
+
+A carreira joga **todas as divisões ao mesmo tempo**: no início do jogo é criada
+uma `Piramide` (`game/piramide.py`) com uma `League` por divisão. Cada rodada
+simulada avança A, B, C e D; a sua divisão decide o calendário da tela
+"Jogar Rodada", mas o resto do país joga junto.
+
+```python
+from game.piramide import Piramide
+
+piramide = Piramide(times)          # times com .divisao = "A".."D"
+piramide.ordem                      # ['A', 'B', 'C', 'D']
+piramide.rodada("B")                # rodada atual da Série B
+piramide.simular_rodada("Flamengo") # uma rodada em cada divisão
+piramide.classificacao("D")         # tabela completa da Série D
+piramide.confrontos_da_rodada("C", 12)   # jogos da rodada 12 (com placar)
+piramide.data_da_rodada(1)          # data fictícia da rodada
+piramide.acesso_descenso()          # prévia do sobe-e-desce
+piramide.nova_temporada()           # aplica e recomeça
+```
+
+Regras do sobe-e-desce (`ACESSO_PADRAO`): caem **4** de cada divisão, sobem os
+**4** primeiros da de baixo. A Série D não tem divisão abaixo, então só recebe
+quem cai da C. Os times que mudam de divisão levam elenco e finanças junto; as
+estatísticas zeram no início da temporada seguinte.
+
+**Telas**
+
+- **🏆 Classificações** — uma aba por divisão, com a tabela completa, as zonas
+  (Libertadores/Sul-Americana/acesso/rebaixamento), a legenda e a artilharia por
+  divisão.
+- **📅 Calendário** — rodada a rodada de qualquer divisão, com data, placar dos
+  jogos já disputados e destaque do seu time; a aba "Meus jogos" lista a sua
+  temporada inteira com V/E/D.
+- **📊 Resultados** — placares por rodada, com abas para as quatro divisões.
+
+## Criador de campeonatos
+
+O criador monta torneios com todas as combinações que o motor suporta:
+
+| Opção | Onde vale | Efeito |
+|---|---|---|
+| Formato | todos | pontos corridos, copa ou grupos + eliminatórias |
+| Ida e volta na fase de grupos | pontos corridos, grupos | turno único ou turno e returno |
+| Ida e volta nas fases | copa, grupos | jogo único ou ida e volta no mata-mata |
+| Final em jogo único | copa, grupos | a final sempre em jogo único |
+| Disputa de 3º lugar | copa, grupos | jogo extra entre os perdedores das semifinais |
+| Distribuição dos times | todos | sorteio ou cabeças de chave (potes por força) |
+| Número de grupos | grupos | de 2 a 12 grupos |
+| Times por grupo | grupos | fixa o tamanho e deriva a quantidade de grupos |
+| Classificados por grupo | grupos | quantos avançam de cada grupo |
+| Promovidos / rebaixados | pontos corridos | quantos sobem e caem no fim |
+| Temporada | todos | ano exibido no torneio |
+| Sorteio reproduzível + semente | todos | mesmo sorteio para a mesma semente |
+
+A tela mostra uma **prévia** do formato antes de criar ("4 grupos (5 times) ·
+classificam 2 por grupo (8 no mata-mata) · 40 jogos na fase de grupos + 7 no
+mata-mata..."), e os limites se ajustam ao número de times escolhido.
+
+```python
+from game.competicoes import Campeonato
+
+camp = Campeonato(
+    "Copa Aurora", times, formato="grupos_mata",
+    times_por_grupo=5, classificados_por_grupo=2,
+    ida_e_volta=True, ida_e_volta_mata=False,
+    distribuicao="forca", terceiro_lugar=True,
+    final_unica=True, semente=42,
+)
+camp.simular_tudo()
+camp.jogo_terceiro_lugar        # Partida da disputa de 3º lugar
+```
 
 ## Interface (Streamlit)
 
@@ -225,8 +298,10 @@ As fontes vêm do Google Fonts via `<link>`; se não carregarem, o CSS cai para
 
 - Hero em gradiente com o escudo e o resumo da temporada.
 - Cards de clube com as cores de cada time (`cor_primaria` / `cor_secundaria`).
-- Tabelas HTML (classificação, elenco, artilharia) com zebra, zona colorida
-  (Libertadores / Sul-Americana / rebaixamento) e destaque do seu time.
+- Tabelas HTML (classificações das 4 divisões, elenco, artilharia) com zebra,
+  zona colorida (Libertadores / Sul-Americana / acesso / rebaixamento) e
+  destaque do seu time.
+- Calendário com uma linha por jogo, data da rodada e placar (ou "a jogar").
 - Campo tático com grama listrada, linha de meio e círculo central, e chips de
   jogador com overall e energia.
 - Placar em gradiente por resultado e narração em linha do tempo (gol, amarelo,
