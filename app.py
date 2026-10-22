@@ -90,6 +90,35 @@ html, body, [class*="css"], .stApp, .stMarkdown, p, span, div, label{
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
 }
+
+/* ---------- ícones (Material Symbols) ----------
+   A regra global acima vale para todo <span> e, com !important, vencia a
+   fonte dos ícones nativos do Streamlit — o nome da ligadura aparecia como
+   texto (ex.: "keyboard_double_arrow_left" no botão de recolher a sidebar).
+   Esta regra tem especificidade maior e devolve a fonte de ícones. */
+span[data-testid="stIconMaterial"],
+[data-testid="stIconMaterial"],
+.material-symbols-rounded,
+.material-symbols-outlined{
+    font-family: "Material Symbols Rounded" !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-feature-settings: "liga" !important;
+    -webkit-font-feature-settings: "liga" !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+}
+
+/* emojis usados como ícone continuam na fonte de emoji do sistema */
+span[data-testid="stIconEmoji"],
+[data-testid="stIconEmoji"]{
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+        var(--font-ui) !important;
+}
+
 .stApp{
     background:
         radial-gradient(1200px 600px at 12% -8%, #E9F7EE 0%, rgba(233,247,238,0) 60%),

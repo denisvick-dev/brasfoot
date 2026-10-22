@@ -63,6 +63,7 @@ buscar_clube("FLA")                      # ficha completa do clube
 | `app.py` | mata-mata checava `b is None` antes de `a is None` e estourava em confronto com BYE | ordem das checagens corrigida |
 | `app.py` | "Contratar" em Meus dados passava um jogador `None` para o elenco | checagem de `None` antes de contratar |
 | `criador.py` | `criar_clube()` anexava metadados dentro de `try/except: pass` | atribuição direta nos campos de `Time` |
+| `app.py` (CSS) | regra global `span { font-family: … !important }` vencia a fonte dos ícones nativos do Streamlit: o nome da ligadura aparecia como texto (`keyboard_double_arrow_left` no botão de recolher a sidebar) | regra específica para `[data-testid="stIconMaterial"]` devolvendo `Material Symbols Rounded` (+ fonte de emoji para `stIconEmoji`) |
 
 ### Tipos / Pylance
 
