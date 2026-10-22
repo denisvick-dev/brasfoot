@@ -9,9 +9,9 @@ from game.banco_dados import (
     DIVISOES,
     NOMES_DIVISAO,
 )
+from game.campeonato import League
 from game.divisao import Fase as FaseDivisao
 from game.escudos import imagem as escudo_img
-from game.campeonato import League
 from game.modelos import Partida, Time
 from game.piramide import Piramide, data_da_rodada as data_semana
 from game.regional import TorneioRegional

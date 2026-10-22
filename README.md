@@ -1,407 +1,109 @@
-# Futebol Manager — projeto integrado
+# ⚽ Brasfoot
 
-```
-app.py               interface Streamlit (Brasfoot)
-main.py              demo: roda uma temporada inteira no terminal
-diagnostico.py       calibração: mede o motor contra metas do futebol real
-game/__init__.py
-game/modelos.py      Jogador, Time, Partida, Noticia
-game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
-game/banco_dados.py  elencos a partir das fichas + API de consulta
-game/piramide.py     temporada com as 4 divisões + acesso e descenso
-game/divisao.py     regulamento de cada série: turno único, grupos, mata-mata
-game/copa.py        Copa do Brasil dentro da temporada (128 clubes, ida e volta)
-game/escudos.py      escudos de assets/escudos/ embutidos como data URI
-assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
-scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
-game/dados.py        alias -> game.banco_dados (compatibilidade)
-game/jogo_engine.py  MatchEngine (simulação de partidas)
-game/campeonato.py   League (calendário, rodadas, classificação)
-game/mercado.py      Market (transferências)
-```
+[![CI](https://github.com/denisvick-dev/brasfoot/actions/workflows/ci.yml/badge.svg)](https://github.com/denisvick-dev/brasfoot/actions/workflows/ci.yml)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+
+Gerenciador de futebol brasileiro feito em Python + Streamlit: você assume um
+clube, monta o time, joga a temporada inteira e tenta chegar à Série A.
+
+O banco cobre **156 clubes reais** das Séries A, B, C e D, com escudo, cores,
+estádio, torcida, orçamento e elenco — mais a **Copa do Brasil** (128 clubes),
+três **torneios regionais** e a **Supercopa**.
 
 ## Como rodar
 
 ```bash
-pip install -r requirements.txt   # streamlit
+python -m venv .venv && source .venv/bin/activate   # opcional
+pip install -r requirements.txt
 
-streamlit run app.py      # interface do jogo
-# http://localhost:8501
-
-python main.py            # Brasileirão com 20 clubes (Série A)
-python main.py 24         # 24 clubes
-python main.py 156        # banco inteiro, 4 divisões
-python main.py 20 7       # semente 7 (reproduzível)
-
-python diagnostico.py     # mede gols/jogo, empates, mando de campo etc.
-python shots.py           # screenshots das telas ( precisa do app rodando + playwright )
+streamlit run app.py        # http://localhost:8501
 ```
 
-## Banco de dados
-
-156 clubes em 4 divisões, a pirâmide do futebol brasileiro de 2026:
-
-| Divisão | Clubes |
-|---|---|
-| Série A | 20 |
-| Série B | 20 |
-| Série C | 20 |
-| Série D | 96 |
-
-Cada clube tem ficha completa (`Clube`): cidade, estado, escudo, cores, faixa de
-força do elenco, finanças, torcida, reputação, **divisão, estádio, capacidade,
-fundação e rival**. As fichas ficam em `game/clubes.py`; `game/banco_dados.py`
-transforma ficha em `Time` (gerando o elenco).
-
-```python
-criar_times()                            # 20 clubes (padrão antigo)
-criar_times(24)                          # A + os melhores da B
-criar_times(divisao="B")                 # só uma divisão
-criar_times(None)                        # todos os 156
-criar_times(32, aleatorio=True, semente=7)
-criar_todas_divisoes()                   # {"A": [...], "B": [...], "C": [...], "D": [...]}
-buscar_clube("FLA")                      # ficha completa do clube
-clubes_por_divisao("D")                  # fichas de uma divisão
-resumo_banco()                           # contagem por divisão
-```
-
-Na interface, o seletor **Divisão** da tela inicial define qual campeonato é
-disputado (Série A por padrão); o banco inteiro fica carregado em memória.
-
-## Regulamentos das divisões
-
-Cada série tem o seu formato (`game/divisao.py`), como no futebol brasileiro —
-a tela **🏆 Classificações** mostra as tabelas de cada fase e o 📖 Regulamento.
-
-**Séries A e B (20 clubes, 27 rodadas)**
-
-1. Primeira fase: turno único, todos contra todos (19 rodadas).
-2. Os 8 melhores passam para a segunda fase, em 2 grupos de 4
-   (1º, 4º, 5º e 8º num grupo; 2º, 3º, 6º e 7º no outro), turno e returno
-   (6 rodadas). Os dois primeiros de cada grupo avançam.
-3. Final em ida e volta entre os líderes dos grupos.
-4. **Série B:** os dois primeiros de cada grupo garantem o acesso
-   (4 vagas) — a final vale o título.
-5. Os 4 últimos da primeira fase caem para a série de baixo.
-
-**Série C (20 clubes, 19 rodadas)**
-
-Turno único; o líder é campeão e os 4 primeiros sobem para a Série B. Os 4
-últimos descem para a Série D.
-
-**Série D (96 clubes, 15 rodadas)**
-
-16 grupos de 6 em turno único (5 rodadas); os 2 melhores de cada grupo avançam
-para o mata-mata em ida e volta (16-avos → oitavas → quartas → semifinal →
-final, 10 rodadas). Os 4 semifinalistas sobem para a Série C; não há descenso.
-
-**Copa do Brasil (128 clubes)**
-
-A copa faz parte da temporada (`game/copa.py`): 128 clubes das quatro divisões,
-mata-mata em ida e volta da primeira fase até a final, sem jogo único.
-As datas vêm **depois** das rodadas dos regionais (8, 10, 12, … 34), então o
-clube joga a copa no meio da semana e o Brasileirão no fim de semana — as duas
-competições aparecem juntas em 📅 Calendário, 🏆 Classificações e 📊 Resultados.
-Empate no agregado vai para os pênaltis.
-
-O atalho 🛠️ Criador → 🏆 **Copa do Brasil** continua existindo para montar uma
-copa avulsa, fora da carreira.
-
-**Torneios regionais (12 clubes cada, 7 rodadas)**
-
-No começo da temporada abrem três torneios regionais (`game/regional.py`), com os
-12 clubes mais tradicionais de cada região:
-
-| Torneio | Estados |
-|---|---|
-| Rio-SP | RJ, SP |
-| Sul-Minas | RS, SC, PR, MG |
-| Copa do Nordeste | BA, PE, CE, RN, PB, AL, SE, PI, MA |
-
-1. Três grupos de 4 em turno único (3 rodadas).
-2. Classificam os 2 primeiros de cada grupo + os 2 melhores terceiros (8 clubes),
-   em mata-mata de jogo único: quartas (1×8, 2×7, 3×6, 4×5) e semifinal, sempre
-   na casa do melhor colocado; empate vai para os pênaltis.
-3. Final em ida e volta (agregado + pênaltis), com o pior campanha em casa no
-   primeiro jogo.
-
-**Supercopa do Brasil (jogo único)**
-
-Fecha a temporada (`Piramide`): campeão brasileiro (Série A) × campeão da Copa do
-Brasil, em jogo único na casa do campeão brasileiro. Se o mesmo clube ganhar as
-duas competições, o adversário é o vice da Copa. Empate vai para os pênaltis.
-É a última rodada do calendário (`total_rodadas_global`).
-
-## Escudos
-
-Os escudos ficam em `assets/escudos/` com o nome da sigla do clube — `FLA.png`,
-`AME.svg`… — e a interface mostra a imagem no lugar do emoji (cartões de clube,
-tabelas, títulos e confrontos). Como o app injeta HTML no `st.markdown`, a
-imagem é embutida como *data URI* (cache em `game/escudos.py`), sem servidor de
-estáticos.
-
-**O nome do arquivo é exatamente a sigla de `game/clubes.py`** (campo `sigla` da
-dataclass `Clube`), em maiúsculas e com 3 ou 4 letras — `IAPE.png`, `CRAC.png`.
-As siglas são únicas: nenhum clube divide arquivo com outro. Para conferir:
-
-```python
-from game.escudos import faltando, orfaos
-faltando()   # [] → todo clube do banco tem escudo
-orfaos()     # [] → todo arquivo corresponde a um clube
-```
-
-| Origem | Clubes |
-|---|---|
-| PNG oficial | 156 |
-| SVG genérico (cores do clube + sigla) | 0 |
-
-Todos os 156 clubes do banco têm escudo oficial em PNG — nenhum sobrou no
-desenho genérico. O `scripts/gerar_escudos.py` continua no projeto para clubes
-criados pelo jogador ou para times novos que ainda não tenham imagem: ele
-desenha o SVG genérico (contorno de escudo, listras nas cores do clube, faixa
-clara com a sigla e um leve gradiente de volume). Se um escudo real for
-adicionado depois (`assets/escudos/<SIGLA>.png`), o PNG tem precedência e o SVG
-genérico pode ser apagado.
-
-Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
-transparente). Para criar um clube novo sem imagem:
+No terminal, sem interface:
 
 ```bash
-python scripts/gerar_escudos.py            # só os que faltam
-python scripts/gerar_escudos.py --forcar   # refaz só os genéricos
+python main.py 156          # temporada completa com as quatro divisões
+python diagnostico.py       # calibragem do motor (gols, empates, mando de campo)
 ```
 
-```python
-from game.escudos import imagem, tem_escudo
-imagem("FLA", "🔴⚫")     # <img class="escudo" src="data:image/png;base64,…">
-tem_escudo("FLA")         # True
+## O que dá para fazer no jogo
+
+- **Escolher ou criar** seu clube (escudo, cores, estádio, orçamento e elenco).
+- **Elenco e tática**: formação, estilo de jogo (retranca ↔ ataque total),
+  escalação manual ou automática, energia, cartões, lesões e suspensões.
+- **Jogar rodada a rodada**, com narração do jogo e tabela ao vivo.
+- **Quatro divisões** com regulamentos diferentes (turno e returno, turno único
+  e mata-mata), acesso e descenso ao fim da temporada.
+- **Copa do Brasil**, **regionais** e **Supercopa** no mesmo calendário.
+- **Mercado de transferências**: contratar, vender, salários, valor de mercado.
+- **Finanças**: bilheteria, cota de TV, folha salarial e premiação.
+- **Artilharia, notícias e fim de temporada** com balanço do ano.
+
+## Estrutura do repositório
+
+```
+app.py                 ponto de entrada (configura a página e roteia as telas)
+ui/                    interface Streamlit
+  estilos.py             tema, CSS e configuração da página
+  apoio.py               leitura do estado do jogo, formatação e tabelas
+  inicial.py             tela inicial (escolher/criar clube)
+  sidebar.py             menu lateral
+  painel.py              painel do clube
+  elenco.py              elenco, salários, lesões e suspensões
+  tatica.py              formação, estilo e escalação
+  jogar.py               pré-jogo, partida e fim de temporada
+  competicoes.py         classificação, calendário e resultados
+  mercado.py             transferências
+  criador.py             criador de clubes, jogadores e competições
+  competicao.py          detalhes de competição personalizada
+  noticias.py            central de notícias
+game/                  simulação (sem Streamlit)
+  modelos.py             Jogador, Time, Partida, Noticia
+  clubes.py              fichas dos 156 clubes
+  banco_dados.py         elencos e consultas
+  jogo_engine.py         motor de partida
+  campeonato.py          League (pontos corridos)
+  divisao.py             regulamento de cada série
+  copa.py                Copa do Brasil
+  regional.py            torneios regionais
+  piramide.py            temporada completa, acesso e descenso
+  mercado.py             transferências
+  criador.py             criação e persistência de clubes/jogadores
+  escudos.py             escudos embutidos como data URI
+  persistencia.py        dados/ em JSON
+assets/escudos/        156 escudos (PNG)
+scripts/               utilitários (gera escudo genérico)
+docs/                  documentação detalhada
+tests/                 suíte pytest
 ```
 
-Clube sem imagem (por exemplo, criado pelo jogador) cai no emoji de sempre.
-Os escudos são marcas dos clubes; aqui são usados apenas para identificá-los
-no jogo.
+## Documentação
 
-## Correções aplicadas
+| Documento | Conteúdo |
+| --- | --- |
+| [docs/arquitetura.md](docs/arquitetura.md) | módulos, fluxo da temporada e da interface |
+| [docs/competicoes.md](docs/competicoes.md) | regulamentos das séries, copa, regionais e supercopa |
+| [docs/motor.md](docs/motor.md) | como a partida é simulada e constantes tunáveis |
+| [docs/escudos.md](docs/escudos.md) | como os escudos são carregados e trocados |
+| [docs/criador.md](docs/criador.md) | criador de campeonatos |
+| [docs/historico.md](docs/historico.md) | correções aplicadas ao longo do projeto |
+| [docs/desenvolvimento.md](docs/desenvolvimento.md) | ambiente, testes, lint e CI |
+| [CHANGELOG.md](CHANGELOG.md) | versões |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | como contribuir |
 
-| Arquivo | Problema | Correção |
-|---|---|---|
-| `mercado.py` | `from game.banco_dados import ...` quebrava (módulo se chamava `dados`) | banco renomeado para `banco_dados.py`; `dados.py` virou alias |
-| `jogo_engine.py` | goleador contava **2 jogos** por partida | contagem única em `_atualizar_stats` |
-| `campeonato.py` | `League([])` gerava calendário vazio e travava depois | validação: mínimo de 2 times |
-| `campeonato.py` | `artilharia()` tipada como `list[Jogador]`, mas devolve tuplas | tipo corrigido para `list[tuple[Jogador, str]]` |
-| `mercado.py` | elenco não era reescalado após compra/venda | `auto_escalar()` após a transferência |
-| `mercado.py` | vender sem outro clube quebrava (`random.choice([])`) e a venda não reescalava o vendedor | validação do comprador + `auto_escalar()` nos dois lados |
-| `modelos.py` | `divisao`, `estadio`, `capacidade`, `fundacao`, `rival` e `origem` eram anexados "por fora" da dataclass `Time` (e descartados em silêncio) | viraram campos reais da dataclass |
-| `competicoes.py` | pontos corridos gravavam `grupo=""`, então a aba de classificação filtrava `"Geral"` e mostrava a tabela zerada | grupo `"Geral"` desde a montagem (+ compatibilidade com campeonatos antigos) |
-| `app.py` | clube criado pelo jogador podia ser escolhido na tela inicial, mas ficava fora da `League`/`Market` (`get_meu_time()` devolvia `None`) | a lista de times da liga agora inclui os clubes criados |
-| `app.py` | mata-mata checava `b is None` antes de `a is None` e estourava em confronto com BYE | ordem das checagens corrigida |
-| `app.py` | "Contratar" em Meus dados passava um jogador `None` para o elenco | checagem de `None` antes de contratar |
-| `criador.py` | `criar_clube()` anexava metadados dentro de `try/except: pass` | atribuição direta nos campos de `Time` |
-| `piramide.py` | temporada só em pontos corridos (38 ou 190 rodadas), sem acesso por fase | regulamento por série em `divisao.py` (turno único, grupos e mata-mata) |
-| `app.py` (CSS) | regra global `span { font-family: … !important }` vencia a fonte dos ícones nativos do Streamlit: o nome da ligadura aparecia como texto (`keyboard_double_arrow_left` no botão de recolher a sidebar) | regra específica para `[data-testid="stIconMaterial"]` devolvendo `Material Symbols Rounded` (+ fonte de emoji para `stIconEmoji`) |
-
-### Tipos / Pylance
-
-O projeto passa **sem erros e sem warnings** no Pylance (mesma engine do
-Pyright) quando o interpretador tem as dependências instaladas. O Pylance segue
-o `pyrightconfig.json` do repositório, então o resultado no VS Code é o mesmo da
-linha de comando. As ferramentas de conferência estão em `requirements-dev.txt`:
+## Desenvolvimento
 
 ```bash
 pip install -r requirements-dev.txt
-pyright .        # 0 errors, 0 warnings  (config em pyrightconfig.json)
-ruff check .     # sem problemas (F, E9, B, UP — config em ruff.toml)
+ruff check .      # lint
+pyright .         # tipos (mesmo resultado do Pylance)
+pytest            # 48 testes
 ```
 
-O Playwright (usado só por `shots.py`) também vem do `requirements-dev.txt`;
-depois rode `playwright install chromium`.
+O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.
 
-Principais ajustes de tipagem: `tabela()` de `Campeonato` agora devolve
-`list[LinhaTabela]` (TypedDict) em vez de `list[dict]`; `_evento_gol()` e
-`_vencedor_confronto()` declaram `str | None` / `Time | None` (era o que o
-corpo já devolvia); `Time | None` e `Fase | None` são estreitados antes do uso;
-`_gerar_elenco`, `_gerar_jogadores_posicao`, `criar_times` e
-`criar_todas_divisoes` têm tipos de retorno; `game.liga`/`game.dados` deixaram
-de trocar `sys.modules` e viraram reexports de verdade (o Pylance não
-conseguia enxergar `League`).
+## Licença
 
-## Rebalanceamento do motor
-
-**Causa raiz do campeonato aleatório:** a força dos times só decidia *quem*
-atacava; a conversão em gol era 15% fixa, independente da qualidade do ataque e
-da defesa. Agora cada chance é resolvida por **ataque x defesa**
-(`CONVERSAO * ataque / (ataque + defesa)`), com bônus de mando de campo, moral,
-energia e tática.
-
-Medido em 5 temporadas de 20 clubes (`diagnostico.py`):
-
-| Métrica | Antes | Depois | Meta |
-|---|---|---|---|
-| Gols por jogo | 0,85 | **2,52** | 2,2 – 2,7 |
-| Empates | 49,3% | **25,3%** | 22 – 30% |
-| Vitórias do mandante | 26,1% | **44,2%** | 42 – 50% |
-| Correlação overall x pontos | +0,19 | **+0,71** | ≥ 0,55 |
-| Artilheiro (38 rodadas) | 9 gols | **15 gols** | — |
-| Energia média (sistema inerte) | 97 | **77** | — |
-| Times com caixa negativo (banco de 61 clubes da época) | 29 | **4** | — |
-| Jogos com público acima da capacidade | 227 | **0** | — |
-
-Outras mudanças:
-
-- **Público** agora respeita a capacidade do estádio (`capacidade` da ficha do
-  clube) — antes o Vasco lotava São Januário com 35 mil lugares.
-- **Renda** = bilheteria + cota de TV (por torcida), paga ao mandante.
-- **Salários** saem a cada 6 rodadas (≈ 1 folha por mês), em vez de a cada 4 —
-  era o que quebrava os clubes pequenos.
-- **Energia** pesa de verdade: desgaste 20–35, recuperação 12–26, e
-  `Time.auto_escalar(considerar_energia=True)` escala por
-  `overall * (0,6 + 0,4 * energia/100)`. Resultado: 404 de 440 jogadores são
-  usados na temporada (rodízio real).
-- **Tática** tem custo: atacar mais melhora o ataque e piora a defesa.
-
-## Constantes tunáveis
-
-Tudo está em `MatchEngine` (topo da classe), e `diagnostico.py` mostra se cada
-métrica está na meta:
-
-```python
-CHANCE_EVENTO = 0.12          # eventos por minuto
-PESOS_EVENTO = {"chance": 58, "cartao": 8, "falta": 14, "escanteio": 20}
-CONVERSAO = 0.74              # ~0,37 de conversão em confronto equilibrado
-BONUS_CASA_ATAQUE = 11.0 / BONUS_CASA_DEFESA = 5.0 / BONUS_CASA_GERAL = 11.0
-PESO_TATICA_ATAQUE = 0.22 / PESO_TATICA_DEFESA = 0.18
-DESGASTE 20–35 / RECUPERACAO 12–26 / PROB_LESAO = 0.03
-INGRESSO 40–90 / COTA_TV_POR_TORCEDOR = 12_000 / RODADAS_POR_MES = 6
-```
-
-Para recalibrar, altere a constante e rode `python diagnostico.py`.
-
-## Observações
-
-- Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
-  `proximo_adversario()` devolve `"Folga"` nesses casos.
-- O calendário segue o regulamento de cada série: A/B têm 27 rodadas, C tem 19
-  e a D (96 clubes) tem 15. As quatro divisões, os três regionais, a Copa do
-  Brasil e a Supercopa correm juntas (35 rodadas no total);
-  quando a sua divisão termina e você já saiu da copa, o botão "Simular o
-  restante da temporada" fecha o ano. Se a sua divisão acaba mas você continua
-  vivo na copa, o ⚽ Jogar Rodada passa a mostrar só os jogos da copa.
-- O acesso e o descenso são definidos pelo regulamento de cada série e aplicados
-  ao fechar a temporada (`Piramide.aplicar_acesso_descenso`).
-- Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa
-  negativo; é o comportamento esperado da régua econômica atual.
-- `is_player_home` / `is_player_away` continuam sem uso dentro de `simular()` —
-  ficaram disponíveis para a interface (narração, escalação do jogador).
-
-## Temporada com as quatro divisões
-
-A carreira joga **todas as divisões ao mesmo tempo**: no início do jogo é criada
-uma `Piramide` (`game/piramide.py`) com uma `League` por divisão. Cada rodada
-simulada avança A, B, C e D; a sua divisão decide o calendário da tela
-"Jogar Rodada", mas o resto do país joga junto.
-
-```python
-from game.piramide import Piramide
-
-piramide = Piramide(times)          # times com .divisao = "A".."D"
-piramide.ordem                      # ['A', 'B', 'C', 'D']
-piramide.rodada("B")                # rodada atual da Série B
-piramide.simular_rodada("Flamengo") # uma rodada em cada divisão
-piramide.classificacao("D")         # tabela completa da Série D
-piramide.confrontos_da_rodada("C", 12)   # jogos da rodada 12 (com placar)
-piramide.data_da_rodada(1)          # data fictícia da rodada
-piramide.acesso_descenso()          # prévia do sobe-e-desce
-piramide.nova_temporada()           # aplica e recomeça
-```
-
-Regras do sobe-e-desce (`ACESSO_PADRAO`): caem **4** de cada divisão, sobem os
-**4** primeiros da de baixo. A Série D não tem divisão abaixo, então só recebe
-quem cai da C. Os times que mudam de divisão levam elenco e finanças junto; as
-estatísticas zeram no início da temporada seguinte.
-
-**Telas**
-
-- **🏆 Classificações** — uma aba por divisão, com a tabela completa, as zonas
-  (Libertadores/Sul-Americana/acesso/rebaixamento), a legenda e a artilharia por
-  divisão.
-- **📅 Calendário** — rodada a rodada de qualquer divisão, com data, placar dos
-  jogos já disputados e destaque do seu time; a aba "Meus jogos" lista a sua
-  temporada inteira com V/E/D.
-- **📊 Resultados** — placares por rodada, com abas para as quatro divisões.
-
-## Criador de campeonatos
-
-O criador monta torneios com todas as combinações que o motor suporta:
-
-| Opção | Onde vale | Efeito |
-|---|---|---|
-| Formato | todos | pontos corridos, copa ou grupos + eliminatórias |
-| Ida e volta na fase de grupos | pontos corridos, grupos | turno único ou turno e returno |
-| Ida e volta nas fases | copa, grupos | jogo único ou ida e volta no mata-mata |
-| Final em jogo único | copa, grupos | a final sempre em jogo único |
-| Disputa de 3º lugar | copa, grupos | jogo extra entre os perdedores das semifinais |
-| Distribuição dos times | todos | sorteio ou cabeças de chave (potes por força) |
-| Número de grupos | grupos | de 2 a 12 grupos |
-| Times por grupo | grupos | fixa o tamanho e deriva a quantidade de grupos |
-| Classificados por grupo | grupos | quantos avançam de cada grupo |
-| Promovidos / rebaixados | pontos corridos | quantos sobem e caem no fim |
-| Temporada | todos | ano exibido no torneio |
-| Sorteio reproduzível + semente | todos | mesmo sorteio para a mesma semente |
-
-A tela mostra uma **prévia** do formato antes de criar ("4 grupos (5 times) ·
-classificam 2 por grupo (8 no mata-mata) · 40 jogos na fase de grupos + 7 no
-mata-mata..."), e os limites se ajustam ao número de times escolhido.
-
-```python
-from game.competicoes import Campeonato
-
-camp = Campeonato(
-    "Copa Aurora", times, formato="grupos_mata",
-    times_por_grupo=5, classificados_por_grupo=2,
-    ida_e_volta=True, ida_e_volta_mata=False,
-    distribuicao="forca", terceiro_lugar=True,
-    final_unica=True, semente=42,
-)
-camp.simular_tudo()
-camp.jogo_terceiro_lugar        # Partida da disputa de 3º lugar
-```
-
-## Interface (Streamlit)
-
-`app.py` é a interface do jogo. O app importa `from game.liga import League`;
-como a implementação mora em `game/campeonato`, existe `game/liga.py` que só
-reexporta o módulo (mesmo truque de `game/dados.py`), então qualquer um dos
-dois nomes funciona.
-
-**Tipografia**
-
-| Fonte | Uso |
-|---|---|
-| Plus Jakarta Sans | títulos, placares e números de destaque |
-| Manrope | interface, textos e botões |
-| Inter | tabelas e dados (com `tabular-nums` para alinhar colunas) |
-
-As fontes vêm do Google Fonts via `<link>`; se não carregarem, o CSS cai para
-`system-ui` sem quebrar o layout.
-
-**Componentes visuais**
-
-- Hero em gradiente com o escudo e o resumo da temporada.
-- Cards de clube com as cores de cada time (`cor_primaria` / `cor_secundaria`).
-- Tabelas HTML (classificações das 4 divisões, elenco, artilharia) com zebra,
-  zona colorida (Libertadores / Sul-Americana / acesso / rebaixamento) e
-  destaque do seu time.
-- Calendário com uma linha por jogo, data da rodada e placar (ou "a jogar").
-- Campo tático com grama listrada, linha de meio e círculo central, e chips de
-  jogador com overall e energia.
-- Placar em gradiente por resultado e narração em linha do tempo (gol, amarelo,
-  vermelho, defesa).
-- Barras de energia em gradiente e selos de status (disponível / lesionado /
-  suspenso).
-- Abas **🌎 Regionais** em Classificações e Resultados (tabelas dos grupos, chave
-  do mata-mata e jogos rodada a rodada) e cards dos campeões regionais, da
-  Supercopa e do acesso/descenso no fim da temporada.
-- Acabamento: rolagem horizontal nas tabelas largas, abas roláveis e paddings
-  menores em telas estreitas, microinterações em linhas de resultado e cartões
-  de clube (escudo ao lado do nome), foco visível no teclado e respeito a
-  `prefers-reduced-motion`.
+Código sob [MIT](LICENSE). Os escudos em `assets/escudos/` são marcas dos
+respectivos clubes e aparecem aqui apenas para identificar os times no jogo.

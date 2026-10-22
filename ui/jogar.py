@@ -7,8 +7,8 @@ import streamlit as st
 from game.banco_dados import (
     NOMES_DIVISAO,
 )
-from game.escudos import imagem as escudo_img
 from game.campeonato import League
+from game.escudos import imagem as escudo_img
 from game.modelos import Partida, Time
 from ui.apoio import (
     _rotulo_competicao,

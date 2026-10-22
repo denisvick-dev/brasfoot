@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brasfoot"
+version = "2.0.0"
+description = "Gerenciador de futebol brasileiro: 156 clubes, quatro divisões, Copa do Brasil, regionais e Supercopa — Python + Streamlit."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "denisvick-dev" }]
+keywords = ["futebol", "brasfoot", "streamlit", "jogo", "simulacao"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Games/Entertainment :: Simulation",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = ["streamlit>=1.32"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "pyright>=1.1.380", "playwright>=1.40"]
+
+[tool.setuptools]
+packages = ["game", "ui"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+extend-exclude = ["dados", "shots"]
+
+[tool.ruff.lint]
+# Mesmo conjunto documentado no README: `ruff check .` não muda de máquina
+# para máquina só porque saiu uma versão nova do Ruff.
+select = ["F", "E9", "B", "UP", "I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["game", "ui"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

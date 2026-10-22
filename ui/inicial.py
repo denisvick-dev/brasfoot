@@ -9,8 +9,8 @@ from game.banco_dados import (
     NOMES_DIVISAO,
     criar_times,
 )
-from game.escudos import imagem as escudo_img
 from game.campeonato import League
+from game.escudos import imagem as escudo_img
 from game.mercado import Market
 from game.piramide import Piramide
 from ui.apoio import formatar_dinheiro, secao
