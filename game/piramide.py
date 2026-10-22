@@ -25,10 +25,10 @@ import datetime as dt
 import random
 
 from game.copa import CopaBrasil
-from game.jogo_engine import MatchEngine
 from game.divisao import REGULAMENTOS, TemporadaDivisao
-from game.regional import REGIONAIS, TorneioRegional
+from game.jogo_engine import MatchEngine
 from game.modelos import Partida, Time
+from game.regional import REGIONAIS, TorneioRegional
 
 # ordem da pirâmide (de cima para baixo)
 ORDEM_DIVISOES = ("A", "B", "C", "D")

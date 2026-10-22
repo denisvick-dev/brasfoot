@@ -255,9 +255,7 @@ class TorneioRegional:
         indice = self._jogo_atual
         if indice < 3:
             jogos = self._jogar_grupos(indice, rodada, time_jogador)
-        elif indice == 3:
-            jogos = self._jogar_mata(rodada, time_jogador)
-        elif indice == 4:
+        elif indice in (3, 4):
             jogos = self._jogar_mata(rodada, time_jogador)
         else:
             jogos = self._jogar_final(rodada, time_jogador)
