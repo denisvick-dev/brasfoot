@@ -15,6 +15,7 @@ Os números abaixo foram calibrados para chegar perto do Brasileirão real:
 """
 
 import random
+from typing import ClassVar
 
 from game.modelos import Partida, Time
 
@@ -23,9 +24,9 @@ class MatchEngine:
     """Simula uma partida de futebol."""
 
     # ---- parâmetros de simulação (tunáveis) -------------------------
-    CHANCE_EVENTO = 0.12          # prob. de evento por minuto (~11 por jogo)
-    CHANCE_EVENTO_ACRESCIMO = 0.16
-    PESOS_EVENTO = {              # chance = finalização (pode virar gol)
+    CHANCE_EVENTO: ClassVar[float] = 0.12  # por minuto (~11 eventos por jogo)
+    CHANCE_EVENTO_ACRESCIMO: ClassVar[float] = 0.16
+    PESOS_EVENTO: ClassVar[dict[str, int]] = {  # chance = finalização (pode virar gol)
         "chance": 58,
         "cartao": 8,
         "falta": 14,

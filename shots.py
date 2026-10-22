@@ -1,8 +1,14 @@
-"""Tira screenshots do app para conferência visual (não é parte do jogo)."""
+"""Tira screenshots do app para conferência visual (não é parte do jogo).
+
+Precisa do Playwright, que é dependência de desenvolvimento::
+
+    pip install -r requirements-dev.txt
+    playwright install chromium
+"""
 
 import sys
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright  # pyright: ignore[reportMissingImports]
 
 URL = "http://localhost:8501"
 SAIDA = "shots"

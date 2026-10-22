@@ -23,7 +23,7 @@ game/mercado.py      Market (transferências)
 ## Como rodar
 
 ```bash
-pip install -r requirements.txt   # streamlit + playwright
+pip install -r requirements.txt   # streamlit
 
 streamlit run app.py      # interface do jogo
 # http://localhost:8501
@@ -142,11 +142,13 @@ sem servidor de estáticos.
 
 | Origem | Clubes |
 |---|---|
-| PNG oficial | 124 |
+| PNG oficial | 151 |
 | SVG importado (Séries A/B) | 4 |
-| SVG genérico (cores do clube + sigla) | 28 |
+| SVG genérico (cores do clube + sigla) | 1 |
 
-Os 28 escudos genéricos são de clubes da Série D que não têm imagem pública
+O único escudo genérico (Independência-AC, sem imagem confiável) segue o mesmo
+desenho dos demais: contorno de escudo, listras nas cores do clube, faixa clara
+com a sigla e volume discreto. Os outros escudos genéricos são de clubes da Série D que não têm imagem pública
 indexada; foram desenhados por `scripts/gerar_escudos.py` no estilo "escudo
 genérico" dos jogos de futebol: contorno de escudo, listras nas cores do clube,
 faixa clara com a sigla e um leve gradiente de volume — o mesmo desenho para
@@ -194,13 +196,18 @@ no jogo.
 ### Tipos / Pylance
 
 O projeto passa **sem erros e sem warnings** no Pylance (mesma engine do
-Pyright) quando o interpretador tem as dependências do `requirements.txt`:
+Pyright) quando o interpretador tem as dependências instaladas. O Pylance segue
+o `pyrightconfig.json` do repositório, então o resultado no VS Code é o mesmo da
+linha de comando. As ferramentas de conferência estão em `requirements-dev.txt`:
 
 ```bash
-pip install -r requirements.txt
-pyright .        # 0 errors, 0 warnings
-ruff check .     # sem problemas (F, E9, B, UP)
+pip install -r requirements-dev.txt
+pyright .        # 0 errors, 0 warnings  (config em pyrightconfig.json)
+ruff check .     # sem problemas (F, E9, B, UP — config em ruff.toml)
 ```
+
+O Playwright (usado só por `shots.py`) também vem do `requirements-dev.txt`;
+depois rode `playwright install chromium`.
 
 Principais ajustes de tipagem: `tabela()` de `Campeonato` agora devolve
 `list[LinhaTabela]` (TypedDict) em vez de `list[dict]`; `_evento_gol()` e

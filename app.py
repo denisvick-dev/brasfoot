@@ -2395,7 +2395,7 @@ def tela_classificacao():
         extras.append("🌎 Regionais")
     abas = st.tabs([*rotulos, *extras, "⚽ Artilharia"])
 
-    for aba, divisao in zip(abas, divisoes):
+    for aba, divisao in zip(abas, divisoes, strict=False):
         with aba:
             temporada = (
                 piramide_atual.league(divisao)
@@ -3902,7 +3902,7 @@ def tela_resultados():
     if tem_regionais:
         extras.append("🌎 Regionais")
     abas = st.tabs([*rotulos, *extras])
-    for aba, divisao in zip(abas, divisoes):
+    for aba, divisao in zip(abas, divisoes, strict=False):
         with aba:
             atual = rodada_de(divisao)
             if atual == 0:

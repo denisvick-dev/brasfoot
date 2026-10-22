@@ -450,12 +450,12 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio JK", 8_000, 2005, "CEI",
     ),
     Clube(
-        "Ceilândia", "CEI", "Ceilândia", "DF", "🔴⚪", "#C62828", "#FFFFFF",
+        "Ceilândia", "CEI", "Ceilândia", "DF", "⚫⚪", "#212121", "#FFFFFF",
         28, 48, 500_000, 3, 40,
         "D", "Abadião", 5_000, 1974, "GAM",
     ),
     Clube(
-        "Central", "CEN", "Caruaru", "PE", "🔴⚪", "#C62828", "#FFFFFF",
+        "Central", "CEN", "Caruaru", "PE", "⚫⚪", "#212121", "#FFFFFF",
         32, 54, 1_200_000, 8, 46,
         "D", "Lacerdão", 19_000, 1919, "RET",
     ),
@@ -465,7 +465,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Albino Turbay", 4_000, 2002, "FCC",
     ),
     Clube(
-        "CRAC", "CRAC", "Catalão", "GO", "🔴⚪", "#C62828", "#FFFFFF",
+        "CRAC", "CRAC", "Catalão", "GO", "🔵⚪", "#1E88E5", "#FFFFFF",
         28, 48, 700_000, 4, 40,
         "D", "Genervino da Fonseca", 12_000, 1937, "APD",
     ),
@@ -475,27 +475,27 @@ TIMES_DATA: list[Clube] = [
         "D", "Rei Pelé", 17_126, 1913, "CRB",
     ),
     Clube(
-        "CSE", "CSE", "Palmeira dos Índios", "AL", "🔴⚪", "#C62828", "#FFFFFF",
+        "CSE", "CSE", "Palmeira dos Índios", "AL", "🟢🔴", "#0E7A3F", "#C62828",
         26, 46, 400_000, 3, 38,
         "D", "Juca Sampaio", 8_000, 1918, "ASA",
     ),
     Clube(
-        "Decisão", "DEC", "Recife", "PE", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Decisão", "DEC", "Recife", "PE", "🔵⚪", "#1B2A6B", "#FFFFFF",
         26, 46, 300_000, 2, 36,
         "D", "Estádio Municipal do Recife", 5_000, 2019, "MAG",
     ),
     Clube(
-        "Democrata GV", "DGV", "Governador Valadares", "MG", "🔴⚪", "#C62828", "#FFFFFF",
+        "Democrata GV", "DGV", "Governador Valadares", "MG", "⚫⚪", "#212121", "#FFFFFF",
         28, 48, 500_000, 4, 40,
         "D", "Mamudão", 8_000, 1914, "POU",
     ),
     Clube(
-        "FC Cascavel", "FCC", "Cascavel", "PR", "🟡⚫", "#F9A825", "#212121",
+        "FC Cascavel", "FCC", "Cascavel", "PR", "🟡⚫", "#F5C518", "#212121",
         30, 50, 900_000, 5, 44,
         "D", "Olímpico Regional", 25_000, 2007, "CIA",
     ),
     Clube(
-        "Ferroviário", "FER", "Fortaleza", "CE", "🔴⚪", "#C62828", "#FFFFFF",
+        "Ferroviário", "FER", "Fortaleza", "CE", "🔴⚫", "#C8102E", "#212121",
         34, 56, 2_000_000, 10, 48,
         "D", "Elzir Cabral", 8_000, 1933, "FLO",
     ),
@@ -505,7 +505,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Albertão", 44_000, 1937, "PNB",
     ),
     Clube(
-        "Galvez", "GAL", "Rio Branco", "AC", "🟡⚫", "#F9A825", "#212121",
+        "Galvez", "GAL", "Rio Branco", "AC", "🟡⚫", "#F5C518", "#212121",
         26, 46, 400_000, 2, 36,
         "D", "Arena da Floresta", 20_000, 2011, "HUM",
     ),
@@ -520,32 +520,32 @@ TIMES_DATA: list[Clube] = [
         "D", "Canarinho", 4_000, 1978, "MOR",
     ),
     Clube(
-        "Goiatuba", "GOA", "Goiatuba", "GO", "🟡⚪", "#F9A825", "#FFFFFF",
+        "Goiatuba", "GOA", "Goiatuba", "GO", "🔵⚪", "#1565C0", "#FFFFFF",
         26, 46, 400_000, 2, 36,
         "D", "Divino Garcia Rosa", 3_000, 1975, "ABE",
     ),
     Clube(
-        "Guaporé", "GPR", "Rolim de Moura", "RO", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Guaporé", "GPR", "Rolim de Moura", "RO", "🟠🟢", "#E8730C", "#1E7A3F",
         24, 44, 200_000, 1, 34,
         "D", "Estádio Municipal de Rolim de Moura", 5_000, 1994, "PVH",
     ),
     Clube(
-        "Guarany de Bagé", "GBA", "Bagé", "RS", "🔴⚪", "#C62828", "#FFFFFF",
+        "Guarany de Bagé", "GBA", "Bagé", "RS", "🔴⚪", "#C8102E", "#FFFFFF",
         28, 48, 600_000, 5, 40,
         "D", "Estrela d'Alva", 12_000, 1907, "SJO",
     ),
     Clube(
-        "Humaitá-AC", "HUM", "Rio Branco", "AC", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Humaitá-AC", "HUM", "Rio Branco", "AC", "🟢🔴", "#0E7A3F", "#C8102E",
         26, 46, 400_000, 2, 36,
         "D", "Arena da Floresta", 20_000, 2003, "GAL",
     ),
     Clube(
-        "IAPE", "IAP", "São Luís", "MA", "🔴⚪", "#C62828", "#FFFFFF",
+        "IAPE", "IAP", "São Luís", "MA", "🔵🟡", "#1B3A8B", "#F5C518",
         26, 46, 400_000, 2, 36,
         "D", "Nhozinho Santos", 12_000, 2018, "IMP",
     ),
     Clube(
-        "Iguatu", "IGU", "Iguatu", "CE", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Iguatu", "IGU", "Iguatu", "CE", "🔵⚪", "#1E88E5", "#FFFFFF",
         28, 48, 600_000, 4, 40,
         "D", "Morenão", 6_000, 2010, "MCN",
     ),
@@ -560,7 +560,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Arena da Floresta", 20_000, 1946, "GAL",
     ),
     Clube(
-        "Inhumas", "INH", "Inhumas", "GO", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Inhumas", "INH", "Inhumas", "GO", "🟢🔴", "#0E7A3F", "#7A1B2E",
         24, 44, 200_000, 2, 34,
         "D", "Estádio Municipal de Inhumas", 5_000, 1970, "ABE",
     ),
@@ -580,7 +580,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Adauto Moraes", 6_000, 2006, "AAL",
     ),
     Clube(
-        "Lagarto", "LAG", "Lagarto", "SE", "🟡⚫", "#F9A825", "#212121",
+        "Lagarto", "LAG", "Lagarto", "SE", "🟢⚪", "#0E7A3F", "#FFFFFF",
         26, 46, 400_000, 3, 38,
         "D", "Barretão", 8_000, 2010, "SER",
     ),
@@ -635,12 +635,12 @@ TIMES_DATA: list[Clube] = [
         "D", "Dutrinha", 4_000, 1934, "LUV",
     ),
     Clube(
-        "Monte Roraima", "MOR", "Boa Vista", "RR", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Monte Roraima", "MOR", "Boa Vista", "RR", "🟢🟡", "#0E7A3F", "#F5C518",
         24, 44, 200_000, 1, 34,
         "D", "Canarinho", 4_000, 2016, "GAS",
     ),
     Clube(
-        "Moto Club", "MOT", "São Luís", "MA", "⚫⚪", "#212121", "#FFFFFF",
+        "Moto Club", "MOT", "São Luís", "MA", "🔴⚫", "#C8102E", "#212121",
         30, 52, 1_000_000, 8, 46,
         "D", "Nhozinho Santos", 12_000, 1937, "SAM",
     ),
@@ -670,7 +670,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Dito Souza", 4_000, 1947, "PRI",
     ),
     Clube(
-        "Oratório", "ORA", "Macapá", "AP", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Oratório", "ORA", "Macapá", "AP", "🔵⚪", "#1B3A8B", "#FFFFFF",
         24, 44, 300_000, 2, 34,
         "D", "Zerão", 10_000, 2020, "TRM",
     ),
@@ -680,7 +680,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Morenão", 44_000, 2021, "OPM",
     ),
     Clube(
-        "Parnahyba", "PNB", "Parnaíba", "PI", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Parnahyba", "PNB", "Parnaíba", "PI", "🔵⚪", "#1B3A8B", "#FFFFFF",
         26, 46, 500_000, 3, 38,
         "D", "Pedro Alelaf", 4_000, 1913, "FLP",
     ),
@@ -720,7 +720,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Primavera do Leste", 8_000, 1998, "OPV",
     ),
     Clube(
-        "Real Noroeste", "RNO", "Águia Branca", "ES", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Real Noroeste", "RNO", "Águia Branca", "ES", "🟢🟡", "#0E7A3F", "#F5C518",
         26, 46, 400_000, 2, 36,
         "D", "José Olímpio da Rocha", 3_000, 2008, "VES",
     ),
@@ -750,12 +750,12 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Rio do Sul", 5_000, 2012, "BLU",
     ),
     Clube(
-        "Sergipe", "SER", "Aracaju", "SE", "🔴⚪", "#C62828", "#FFFFFF",
+        "Sergipe", "SER", "Aracaju", "SE", "🔴⚪", "#C8102E", "#FFFFFF",
         32, 54, 1_200_000, 8, 46,
         "D", "Batistão", 15_575, 1909, "ITA",
     ),
     Clube(
-        "Serra Branca", "SBR", "Serra Branca", "PB", "🟢⚪", "#2E7D32", "#FFFFFF",
+        "Serra Branca", "SBR", "Serra Branca", "PB", "🟢🔵", "#0E7A3F", "#1B3A8B",
         24, 44, 300_000, 2, 34,
         "D", "Estádio Municipal de Serra Branca", 3_000, 2010, "SOU",
     ),
@@ -765,7 +765,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Marizão", 9_000, 1957, "TRZ",
     ),
     Clube(
-        "São Joseense", "SJP", "São José dos Pinhais", "PR", "🔴⚪", "#C62828", "#FFFFFF",
+        "São Joseense", "SJP", "São José dos Pinhais", "PR", "🔵🟡", "#1B3A8B", "#F5C518",
         26, 46, 400_000, 3, 38,
         "D", "Estádio do Pinhão", 5_000, 2000, "AZU",
     ),
@@ -830,7 +830,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Benitão", 8_000, 1910, "NOR",
     ),
     Clube(
-        "Vitória-ES", "VES", "Vitória", "ES", "🔴⚪", "#C62828", "#FFFFFF",
+        "Vitória-ES", "VES", "Vitória", "ES", "🔵⚪", "#1B3A8B", "#FFFFFF",
         26, 46, 400_000, 3, 38,
         "D", "Salvador Costa", 3_000, 1903, "RNO",
     ),

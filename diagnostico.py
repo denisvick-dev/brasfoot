@@ -14,7 +14,7 @@ import statistics
 import time
 from collections.abc import Sequence
 
-from game.banco_dados import criar_times, buscar_clube
+from game.banco_dados import buscar_clube, criar_times
 from game.campeonato import League
 
 METAS = {

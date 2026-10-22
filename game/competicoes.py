@@ -532,7 +532,7 @@ class Campeonato:
         # time de maior overall)
         p = 0.5 + (a.overall_time - b.overall_time) / 300
         p = max(0.2, min(0.8, p))
-        vencedor, perdedor = (a, b) if random.random() < p else (b, a)
+        vencedor = a if random.random() < p else b
 
         placar_v, placar_p = (4, 3) if random.random() < 0.7 else (5, 4)
         if confronto.jogos:

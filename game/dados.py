@@ -6,7 +6,7 @@ importa). Este arquivo só reexporta tudo, para que qualquer código escrito
 com o nome antigo (``game.dados``) continue funcionando.
 """
 
-from game.banco_dados import *  # noqa: F401,F403
+from game.banco_dados import *  # noqa: F403
 from game.banco_dados import (  # noqa: F401  (helpers "privados" usados fora)
     _criar_jogador,
     _criar_time_de_ficha,
