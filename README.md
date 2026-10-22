@@ -142,19 +142,17 @@ sem servidor de estáticos.
 
 | Origem | Clubes |
 |---|---|
-| PNG oficial | 151 |
-| SVG importado (Séries A/B) | 4 |
-| SVG genérico (cores do clube + sigla) | 1 |
+| PNG oficial | 152 |
+| SVG genérico (cores do clube + sigla) | 4 |
 
-O único escudo genérico (Independência-AC, sem imagem confiável) segue o mesmo
-desenho dos demais: contorno de escudo, listras nas cores do clube, faixa clara
-com a sigla e volume discreto. Os outros escudos genéricos são de clubes da Série D que não têm imagem pública
-indexada; foram desenhados por `scripts/gerar_escudos.py` no estilo "escudo
-genérico" dos jogos de futebol: contorno de escudo, listras nas cores do clube,
-faixa clara com a sigla e um leve gradiente de volume — o mesmo desenho para
-todos, para não parecer imagem quebrada ao lado dos escudos oficiais. À medida
-que um escudo real é adicionado (`assets/escudos/<SIGLA>.png`), o PNG tem
-precedência e o SVG genérico daquele clube pode ser apagado.
+Restam quatro escudos genéricos — **América-MG (AME)**, **Brasil de Pelotas
+(BDP)**, **Luverdense (LUV)** e **Sampaio Corrêa (SAM)** — desenhados por
+`scripts/gerar_escudos.py` no estilo "escudo genérico" dos jogos de futebol:
+contorno de escudo, listras nas cores do clube, faixa clara com a sigla e um
+leve gradiente de volume, para não parecer imagem quebrada ao lado dos escudos
+oficiais. À medida que um escudo real é adicionado
+(`assets/escudos/<SIGLA>.png`), o PNG tem precedência e o SVG genérico daquele
+clube pode ser apagado.
 
 Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
 transparente). Para criar um clube novo sem imagem:
