@@ -8,12 +8,13 @@ do jogo em ``game/``.
 
 import streamlit as st
 
-from ui.apoio import init_game
+from ui.apoio import barra_status, init_game
 from ui.competicao import tela_competicao
 from ui.competicoes import tela_calendario, tela_classificacao, tela_resultados
 from ui.criador import tela_criador
 from ui.elenco import tela_elenco
 from ui.estilos import carregar_estilos, configurar_pagina
+from ui.financas import tela_financas
 from ui.inicial import tela_inicial
 from ui.jogar import tela_jogar
 from ui.mercado import tela_mercado
@@ -29,6 +30,7 @@ TELAS = {
     "classificacao": tela_classificacao,
     "calendario": tela_calendario,
     "mercado": tela_mercado,
+    "financas": tela_financas,
     "resultados": tela_resultados,
     "noticias": tela_noticias,
     "criador": tela_criador,
@@ -47,6 +49,7 @@ def main() -> None:
         return
 
     sidebar()
+    barra_status()
     TELAS.get(st.session_state.pagina, tela_painel)()
 
 

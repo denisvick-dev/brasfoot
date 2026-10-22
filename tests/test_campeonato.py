@@ -22,7 +22,8 @@ def test_simular_rodada_distribui_pontos(times8):
     jogos = liga.simular_rodada("")
     assert len(jogos) == 4
     pontos = sum(t.pontos for t in times8)
-    assert pontos in (4 * 3, 4 * 3 - 1, 4 * 2)  # vitórias ou empates
+    # cada jogo distribui 3 pontos (vitória) ou 2 (empate)
+    assert 4 * 2 <= pontos <= 4 * 3
     assert liga.rodada_atual == 1
 
 

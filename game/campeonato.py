@@ -4,6 +4,7 @@ Gerenciamento do campeonato (Brasileirão).
 
 import random
 
+from game import rotina
 from game.jogo_engine import MatchEngine
 from game.modelos import Jogador, Noticia, Partida, Time
 
@@ -134,32 +135,10 @@ class League:
         return resultados
 
     def _entre_rodadas(self):
-        """Processa eventos entre rodadas."""
-        for time in self.times:
-            # Recuperar energia (menos do que o desgaste de um jogo inteiro:
-            # quem joga toda rodada precisa ser poupado em algum momento)
-            for j in time.jogadores:
-                j.recuperar_energia(
-                    random.randint(
-                        self.engine.RECUPERACAO_MIN, self.engine.RECUPERACAO_MAX
-                    )
-                )
-
-                # Chance de cura de lesão
-                if j.lesionado and random.random() < 0.3:
-                    j.lesionado = False
-                    j.energia = 60
-
-                # Limpar suspensão (simplificado: 1 rodada)
-                if j.suspenso and random.random() < 0.5:
-                    j.suspenso = False
-
-            # Pagamento de salários (folha mensal, a cada RODADAS_POR_MES)
-            if self.rodada_atual % self.engine.RODADAS_POR_MES == 0:
-                time.financas -= time.folha_salarial
-
-            # Re-escalar times da CPU (já considera energia)
-            time.auto_escalar()
+        """Processa eventos entre rodadas (energia, lesões, suspensões, salários)."""
+        rotina.entre_rodadas(
+            self.times, self.rodada_atual, self.engine.RODADAS_POR_MES
+        )
 
     @property
     def classificacao(self) -> list[Time]:

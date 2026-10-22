@@ -24,6 +24,7 @@ from __future__ import annotations
 import datetime as dt
 import random
 
+from game import financas, rotina
 from game.copa import CopaBrasil
 from game.divisao import REGULAMENTOS, TemporadaDivisao
 from game.jogo_engine import MatchEngine
@@ -207,6 +208,17 @@ class Piramide:
         return total
 
     def simular_rodada(self, time_jogador: str = "") -> dict[str, list[Partida]]:
+        """Joga a rodada da temporada e roda a rotina entre rodadas."""
+        jogos = self._simular_rodada(time_jogador)
+        if not self.encerrada:
+            rotina.entre_rodadas(
+                self.times, self._rodada, self.engine.RODADAS_POR_MES
+            )
+        else:
+            self.premiar_temporada()
+        return jogos
+
+    def _simular_rodada(self, time_jogador: str = "") -> dict[str, list[Partida]]:
         """Joga a rodada da temporada: regionais, divisões/copa ou Supercopa."""
         jogos: dict[str, list[Partida]] = {}
         self._rodada += 1
@@ -241,6 +253,67 @@ class Piramide:
         if partida is not None:
             jogos["SUPERCOPA"] = [partida]
         return jogos
+
+    def premiar_temporada(self) -> None:
+        """Paga a premiação de fim de temporada (uma vez por temporada)."""
+        if getattr(self, "_premiado", False) or not self.fases_finais_encerradas:
+            return
+        rodada = max(self._rodada, 1)
+        for divisao, temporada in self.divisoes.items():
+            tabela = temporada.classificacao
+            total = len(tabela)
+            for posicao, time in enumerate(tabela, start=1):
+                valor = financas.premio_temporada(divisao, posicao, total)
+                if valor > 0:
+                    financas.registrar(
+                        time,
+                        rodada,
+                        "premiacao",
+                        f"{posicao}º lugar na Série {divisao}",
+                        valor,
+                    )
+        if self.copa is not None and self.copa.campeao is not None:
+            financas.registrar(
+                self.copa.campeao,
+                rodada,
+                "premiacao",
+                "Campeão da Copa do Brasil",
+                financas.premio_copa("campeao"),
+            )
+            if self.copa.vice is not None:
+                financas.registrar(
+                    self.copa.vice,
+                    rodada,
+                    "premiacao",
+                    "Vice da Copa do Brasil",
+                    financas.premio_copa("final"),
+                )
+        if self.supercopa is not None:
+            vencedor = self._vencedor_supercopa()
+            if vencedor is not None:
+                financas.registrar(
+                    vencedor,
+                    rodada,
+                    "premiacao",
+                    "Campeão da Supercopa do Brasil",
+                    15_000_000,
+                )
+        self._premiado = True
+
+    def _vencedor_supercopa(self) -> Time | None:
+        """Quem levantou a Supercopa (``None`` se ainda não houve jogo)."""
+        partida = self.supercopa
+        if partida is None:
+            return None
+        if partida.gols_casa > partida.gols_fora:
+            return self.time_por_nome(partida.time_casa)
+        if partida.gols_fora > partida.gols_casa:
+            return self.time_por_nome(partida.time_fora)
+        return None
+
+    def time_por_nome(self, nome: str) -> Time | None:
+        """Time da temporada pelo nome (``None`` se não existir)."""
+        return next((t for t in self.times if t.nome == nome), None)
 
     def simular_restante(self, limite: int = 400) -> int:
         """Simula tudo o que falta (útil para fechar as outras divisões)."""
@@ -462,6 +535,7 @@ class Piramide:
         """
         movimentos = self.aplicar_acesso_descenso()
         self.temporada += 1
+        self._premiado = False
         for time in self.times:
             time.resetar_campeonato()
             time.auto_escalar()

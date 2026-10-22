@@ -49,6 +49,31 @@ def get_meu_time() -> Time | None:
     return None
 
 
+def barra_status() -> None:
+    """Barra superior com o resumo do clube (clube, série, rodada, posição, caixa)."""
+    time = get_meu_time()
+    if time is None:
+        return
+    league = st.session_state.league
+    posicao = posicao_na_tabela(league, time.nome)
+    posicao_html = f"{posicao}º" if posicao else "—"
+    st.markdown(
+        f"""
+    <div class="status-bar">
+        <div class="sb-clube">
+            {escudo_img(time.sigla, time.escudo_emoji, "escudo-mini")}
+            <span>{time.nome}</span>
+        </div>
+        <div class="sb-item">Série <b>{divisao_do_jogador()}</b></div>
+        <div class="sb-item">Rodada <b>{league.rodada_atual}/{league.total_rodadas}</b></div>
+        <div class="sb-item">Posição <b>{posicao_html}</b></div>
+        <div class="sb-item sb-right">💰 Caixa <b>{formatar_dinheiro(time.financas)}</b></div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
 def formatar_dinheiro(valor: int) -> str:
     """Formata valor monetário."""
     if valor >= 1_000_000:

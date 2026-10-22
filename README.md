@@ -37,7 +37,9 @@ python diagnostico.py       # calibragem do motor (gols, empates, mando de campo
   e mata-mata), acesso e descenso ao fim da temporada.
 - **Copa do Brasil**, **regionais** e **Supercopa** no mesmo calendário.
 - **Mercado de transferências**: contratar, vender, salários, valor de mercado.
-- **Finanças**: bilheteria, cota de TV, folha salarial e premiação.
+- **Finanças**: bilheteria, cota de TV, patrocínio, folha salarial, prêmios por
+  posição e extrato completo de cada lançamento (tela própria no menu).
+- **Objetivo da diretoria** por série, com situação atualizada rodada a rodada.
 - **Artilharia, notícias e fim de temporada** com balanço do ano.
 
 ## Estrutura do repositório
@@ -55,6 +57,7 @@ ui/                    interface Streamlit
   jogar.py               pré-jogo, partida e fim de temporada
   competicoes.py         classificação, calendário e resultados
   mercado.py             transferências
+  financas.py            caixa, folha, receitas, despesas e extrato
   criador.py             criador de clubes, jogadores e competições
   competicao.py          detalhes de competição personalizada
   noticias.py            central de notícias
@@ -69,6 +72,9 @@ game/                  simulação (sem Streamlit)
   regional.py            torneios regionais
   piramide.py            temporada completa, acesso e descenso
   mercado.py             transferências
+  financas.py            extrato, resumo e premiação
+  rotina.py              energia, lesões, suspensões e salários entre rodadas
+  diretoria.py           objetivo da diretoria por série
   criador.py             criação e persistência de clubes/jogadores
   escudos.py             escudos embutidos como data URI
   persistencia.py        dados/ em JSON
@@ -86,6 +92,7 @@ tests/                 suíte pytest
 | [docs/competicoes.md](docs/competicoes.md) | regulamentos das séries, copa, regionais e supercopa |
 | [docs/motor.md](docs/motor.md) | como a partida é simulada e constantes tunáveis |
 | [docs/escudos.md](docs/escudos.md) | como os escudos são carregados e trocados |
+| [docs/financas.md](docs/financas.md) | dinheiro, rotina entre rodadas e diretoria |
 | [docs/criador.md](docs/criador.md) | criador de campeonatos |
 | [docs/historico.md](docs/historico.md) | correções aplicadas ao longo do projeto |
 | [docs/desenvolvimento.md](docs/desenvolvimento.md) | ambiente, testes, lint e CI |
@@ -98,7 +105,7 @@ tests/                 suíte pytest
 pip install -r requirements-dev.txt
 ruff check .      # lint
 pyright .         # tipos (mesmo resultado do Pylance)
-pytest            # 48 testes
+pytest            # 62 testes
 ```
 
 O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.

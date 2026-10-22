@@ -31,6 +31,7 @@ class Jogador:
     valor_mercado: int = 0
     lesionado: bool = False
     suspenso: bool = False
+    jogos_suspenso: int = 0  # jogos que ainda precisa cumprir de suspensão
     titular: bool = False
 
     def __post_init__(self):
@@ -167,6 +168,11 @@ class Time:
     fundacao: int = 0
     rival: str | None = None
     origem: str = "banco"
+
+    # ---- finanças ----
+    # cada lançamento é um dict {rodada, tipo, descricao, valor};
+    # o valor é positivo (receita) ou negativo (despesa).
+    extrato: list[dict] = field(default_factory=list)
 
     @property
     def saldo_gols(self) -> int:

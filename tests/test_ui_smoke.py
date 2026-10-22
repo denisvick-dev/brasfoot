@@ -15,6 +15,7 @@ PAGINAS = [
     "calendario",
     "resultados",
     "mercado",
+    "financas",
     "noticias",
     "criador",
 ]

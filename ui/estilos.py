@@ -497,6 +497,52 @@ hr{ border-color:var(--line); }
 @media (prefers-reduced-motion:reduce){
     *{ transition:none !important; animation:none !important; }
 }
+/* ---------- utilitários ---------- */
+.card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:.85rem 1rem;
+    margin:.45rem 0 .8rem;
+    box-shadow:var(--shadow-sm);
+}
+.card .kicker{
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    font-weight:800;
+    color:var(--ink-3);
+    display:block;
+    margin-bottom:.15rem;
+}
+.muted{ color:var(--ink-2); font-size:.88rem; }
+.valor-pos{ color:#16A34A; font-weight:700; }
+.valor-neg{ color:#DC2626; font-weight:700; }
+
+/* ---------- barra de status (topo, estilo Brasfoot) ---------- */
+.status-bar{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    flex-wrap:wrap;
+    background:linear-gradient(90deg, var(--brand-900) 0%, #0B3D2C 60%, #123A2C 100%);
+    color:#EAF7EF;
+    border-radius:var(--radius);
+    padding:.6rem .9rem;
+    margin-bottom:1rem;
+    box-shadow:var(--shadow);
+}
+.status-bar .sb-clube{ display:flex; align-items:center; gap:.55rem; font-weight:800; }
+.status-bar .sb-clube img{ width:30px; height:30px; object-fit:contain; }
+.status-bar .sb-item{
+    font-size:.8rem;
+    letter-spacing:.01em;
+    color:#C9E7D6;
+    border-left:1px solid rgba(255,255,255,.16);
+    padding-left:1rem;
+}
+.status-bar .sb-item b{ color:#FFFFFF; font-weight:800; }
+.status-bar .sb-right{ margin-left:auto; font-variant-numeric:tabular-nums; }
 </style>
 """,
         unsafe_allow_html=True,

@@ -1,5 +1,22 @@
 # Arquitetura
 
+## Mapa dos módulos
+
+- `ui/` — interface Streamlit (uma tela por módulo; `estilos.py` tem o tema,
+  `apoio.py` as funções compartilhadas e a barra de status).
+- `game/` — simulação, sem Streamlit:
+  - `modelos.py` (Jogador, Time, Partida, Noticia)
+  - `jogo_engine.py` (motor da partida)
+  - `campeonato.py` / `divisao.py` / `copa.py` / `regional.py` / `piramide.py`
+    (competições e temporada)
+  - `financas.py` (extrato, resumo e premiação), `rotina.py` (energia, lesões,
+    suspensões e salários entre rodadas), `diretoria.py` (meta da temporada)
+  - `clubes.py` / `banco_dados.py` (banco de 156 clubes e elencos)
+  - `mercado.py`, `criador.py`, `persistencia.py`, `escudos.py`
+- `scripts/` — utilitários; `tests/` — suíte pytest; `docs/` — esta documentação.
+
+Detalhes de dinheiro e rotina estão em [financas.md](financas.md).
+
 ## Banco de dados
 
 

@@ -4,6 +4,7 @@ Painel do clube: resumo da temporada, próximos jogos e notícias.
 
 import streamlit as st
 
+from game.diretoria import cor_da_situacao, objetivo_do_time
 from game.escudos import imagem as escudo_img
 from ui.apoio import (
     formatar_dinheiro,
@@ -46,6 +47,20 @@ def tela_painel():
         stat_card("💰 Caixa", formatar_dinheiro(time.financas), "#6A1B9A")
     with col5:
         stat_card("🎭 Moral", f"{time.moral_time}%", "#DC2626")
+
+    objetivo = objetivo_do_time(time)
+    situacao = objetivo.situacao(pos)
+    st.markdown(
+        f"""
+    <div class="card" style="border-left:4px solid {cor_da_situacao(situacao)}">
+        <span class="kicker">🎯 Objetivo da diretoria</span>
+        <div style="font-weight:700;margin-top:.2rem">{objetivo.descricao}</div>
+        <div class="muted">Situação: <b style="color:{cor_da_situacao(situacao)}">
+        {situacao}</b></div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
     piramide_painel = get_piramide()
     if piramide_painel is not None:
