@@ -10,6 +10,7 @@ game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
 game/banco_dados.py  elencos a partir das fichas + API de consulta
 game/piramide.py     temporada com as 4 divisões + acesso e descenso
 game/divisao.py     regulamento de cada série: turno único, grupos, mata-mata
+game/copa.py        Copa do Brasil dentro da temporada (128 clubes, ida e volta)
 game/escudos.py      escudos de assets/escudos/ embutidos como data URI
 assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
 scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
@@ -96,9 +97,15 @@ final, 10 rodadas). Os 4 semifinalistas sobem para a Série C; não há descenso
 
 **Copa do Brasil (128 clubes)**
 
-Atalho em 🛠️ Criador → 🏆 **Copa do Brasil**: mata-mata em ida e volta da
-primeira fase até a final (sem jogo único), com os 128 clubes de melhor
-reputação das quatro divisões.
+A copa faz parte da temporada (`game/copa.py`): 128 clubes das quatro divisões,
+mata-mata em ida e volta da primeira fase até a final, sem jogo único.
+As datas caem nas rodadas ímpares do calendário (1, 3, 5, … 27), então o clube
+joga a copa no meio da semana e o Brasileirão no fim de semana — as duas
+competições aparecem juntas em 📅 Calendário, 🏆 Classificações e 📊 Resultados.
+Empate no agregado vai para os pênaltis.
+
+O atalho 🛠️ Criador → 🏆 **Copa do Brasil** continua existindo para montar uma
+copa avulsa, fora da carreira.
 
 ## Escudos
 
@@ -231,8 +238,10 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
 - Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
   `proximo_adversario()` devolve `"Folga"` nesses casos.
 - O calendário segue o regulamento de cada série: A/B têm 27 rodadas, C tem 19
-  e a D (96 clubes) tem 15. As quatro divisões correm juntas; quando a sua
-  termina, o botão "Simular o restante das outras divisões" fecha a temporada.
+  e a D (96 clubes) tem 15. As quatro divisões e a Copa do Brasil correm juntas;
+  quando a sua divisão termina e você já saiu da copa, o botão "Simular o
+  restante da temporada" fecha o ano. Se a sua divisão acaba mas você continua
+  vivo na copa, o ⚽ Jogar Rodada passa a mostrar só os jogos da copa.
 - O acesso e o descenso são definidos pelo regulamento de cada série e aplicados
   ao fechar a temporada (`Piramide.aplicar_acesso_descenso`).
 - Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa

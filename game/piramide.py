@@ -12,7 +12,7 @@ Uso
 >>> piramide.ordem                             # ['A', 'B', 'C', 'D']
 >>> piramide.rodada("B"), piramide.total_rodadas("B")
 (0, 27)
->>> piramide.simular_rodada("Flamengo")        # uma rodada em cada divisão
+>>> piramide.simular_rodada("Flamengo")        # uma rodada em cada divisão (+ copa)
 {'A': [Partida(...), ...], 'B': [...], ...}
 >>> piramide.classificacao("D")[0].nome        # líder da 1ª fase da Série D
 >>> piramide.acesso_descenso()                 # prévia do sobe-e-desce
@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import datetime as dt
 
+from game.copa import CopaBrasil
 from game.divisao import REGULAMENTOS, TemporadaDivisao
 from game.modelos import Partida, Time
 
@@ -50,6 +51,8 @@ class Piramide:
         self.times = list(times)
         self.temporada = temporada
         self.divisoes: dict[str, TemporadaDivisao] = {}
+        self.copa: CopaBrasil | None = None
+        self._rodada = 0
         self._montar()
 
     # ---- montagem ---------------------------------------------------
@@ -67,6 +70,21 @@ class Piramide:
             raise ValueError(
                 "Nenhuma divisão com pelo menos 2 clubes para montar a temporada."
             )
+        self._rodada = 0
+        self.copa = self._montar_copa()
+
+    def _montar_copa(self) -> CopaBrasil | None:
+        """A Copa do Brasil da temporada, com as datas espalhadas nas rodadas."""
+        if len(self.times) < 4:
+            return None
+        total = max(
+            (temporada.total_rodadas for temporada in self.divisoes.values()),
+            default=0,
+        )
+        try:
+            return CopaBrasil(self.times, temporada=self.temporada, rodadas_temporada=total)
+        except ValueError:
+            return None
 
     # ---- divisões ---------------------------------------------------
     @property
@@ -113,28 +131,41 @@ class Piramide:
         return self.league(divisao).encerrada
 
     @property
+    def copa_encerrada(self) -> bool:
+        """``True`` quando a Copa do Brasil terminou (ou não existe)."""
+        return self.copa is None or self.copa.encerrada
+
+    @property
     def encerrada(self) -> bool:
-        """``True`` quando todas as divisões terminaram."""
-        return all(self.encerrada_em(d) for d in self.ordem)
+        """``True`` quando todas as divisões (e a copa) terminaram."""
+        return all(self.encerrada_em(d) for d in self.ordem) and self.copa_encerrada
 
     @property
     def rodada_global(self) -> int:
-        """Maior rodada já disputada em qualquer divisão."""
-        return max(self.rodada(d) for d in self.ordem)
+        """Rodada da temporada já disputada (divisões e copa andam juntas)."""
+        return self._rodada
 
     @property
     def total_rodadas_global(self) -> int:
-        """Calendário mais longo da temporada."""
-        return max(self.total_rodadas(d) for d in self.ordem)
+        """Calendário mais longo da temporada (divisões ou copa)."""
+        total = max((self.total_rodadas(d) for d in self.ordem), default=0)
+        if self.copa is not None:
+            total = max(total, self.copa.total_rodadas)
+        return total
 
     def simular_rodada(self, time_jogador: str = "") -> dict[str, list[Partida]]:
-        """Joga a rodada atual de cada divisão que ainda tem jogos."""
+        """Joga a rodada atual de cada divisão e os jogos da copa na mesma data."""
         jogos: dict[str, list[Partida]] = {}
+        self._rodada += 1
         for divisao in self.ordem:
             temporada = self.divisoes[divisao]
             if temporada.encerrada:
                 continue
             jogos[divisao] = temporada.simular_rodada(time_jogador)
+        if self.copa is not None:
+            partidas = self.copa.simular_rodada_global(self._rodada, time_jogador)
+            if partidas:
+                jogos["COPA"] = partidas
         return jogos
 
     def simular_restante(self, limite: int = 400) -> int:
@@ -184,6 +215,25 @@ class Piramide:
         if div is None:
             return []
         return self.league(div).jogos_do_time(nome_time)
+
+    # ---- copa do brasil ---------------------------------------------
+    def copa_do_brasil(self) -> CopaBrasil | None:
+        """A Copa do Brasil da temporada (``None`` se não foi montada)."""
+        return self.copa
+
+    def copa_confrontos(self, rodada: int) -> list[tuple[str, str, Partida | None]]:
+        """Confrontos da copa marcados para uma rodada global."""
+        return self.copa.confrontos_da_rodada(rodada) if self.copa is not None else []
+
+    def copa_jogos_do_time(
+        self, nome_time: str
+    ) -> list[tuple[int, str, str, Partida | None]]:
+        """Jogos de um clube na copa: ``(rodada, casa, fora, partida)``."""
+        return self.copa.jogos_do_time(nome_time) if self.copa is not None else []
+
+    @property
+    def copa_campeao(self) -> Time | None:
+        return self.copa.campeao if self.copa is not None else None
 
     def data_da_rodada(self, rodada: int, temporada: int | None = None) -> dt.date:
         """Data (semanal) de uma rodada — o calendário do jogo é fictício."""
@@ -239,6 +289,9 @@ class Piramide:
     # ---- resumo -----------------------------------------------------
     def resumo(self) -> str:
         """Texto com a situação de cada divisão (debug/rodapé)."""
-        return "\n".join(
+        linhas = [
             f"{self.nome_divisao(d)}: {self.league(d).resumo()}" for d in self.ordem
-        )
+        ]
+        if self.copa is not None:
+            linhas.append(self.copa.resumo())
+        return "\n".join(linhas)

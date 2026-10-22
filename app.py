@@ -27,6 +27,8 @@ from game.competicoes import (
     excluir_campeonato,
     limites,
 )
+from game.copa import REGULAMENTO as REGULAMENTO_COPA
+from game.copa import FaseCopa
 from game.criador import (
     PERFIS,
     POSICOES,
@@ -615,6 +617,39 @@ def get_piramide() -> Piramide | None:
     return st.session_state.get("piramide")
 
 
+def get_copa():
+    """A Copa do Brasil da temporada (``None`` se não existir)."""
+    piramide = get_piramide()
+    return piramide.copa if piramide is not None else None
+
+
+def copa_da_rodada(rodada: int) -> list[tuple[str, str, Partida | None]]:
+    """Jogos da Copa do Brasil numa rodada da temporada (resultado ou tabela)."""
+    copa = get_copa()
+    if copa is None:
+        return []
+    jogados: list[tuple[str, str, Partida | None]] = [
+        (p.time_casa, p.time_fora, p) for p in copa.resultados.get(rodada, [])
+    ]
+    return jogados or copa.confrontos_da_rodada(rodada)
+
+
+def copa_rodadas_com_jogos() -> list[int]:
+    """Rodadas da temporada em que a Copa do Brasil tem jogos."""
+    piramide = get_piramide()
+    if piramide is None or piramide.copa is None:
+        return []
+    return [r for r in range(1, piramide.total_rodadas_global + 1) if copa_da_rodada(r)]
+
+
+def sigla_de(nome: str) -> str:
+    """Sigla de um clube da temporada."""
+    for time in st.session_state.get("times") or []:
+        if time.nome == nome:
+            return time.sigla
+    return nome[:3].upper()
+
+
 def divisoes_da_temporada() -> list[str]:
     """Divisões que existem na temporada atual (a do jogador primeiro)."""
     piramide = get_piramide()
@@ -1089,6 +1124,25 @@ def tela_painel():
     with col5:
         stat_card("🎭 Moral", f"{time.moral_time}%", "#DC2626")
 
+    copa_painel = get_copa()
+    if copa_painel is not None:
+        proximo_copa = (
+            copa_painel.proximo_jogo(time.nome) if not copa_painel.encerrada else None
+        )
+        if proximo_copa is not None:
+            rodada_copa, casa_copa, fora_copa = proximo_copa
+            adversario_copa = fora_copa if casa_copa == time.nome else casa_copa
+            fase_copa = copa_painel.fases[-1].nome if copa_painel.fases else "Copa"
+            st.caption(
+                f"🏆 **Copa do Brasil · {fase_copa}** — "
+                f"{'🏠 em casa' if casa_copa == time.nome else '✈️ fora de casa'} "
+                f"contra **{adversario_copa}** (rodada {rodada_copa})"
+            )
+        elif copa_painel.campeao is not None:
+            st.caption(f"🏆 Copa do Brasil: campeão **{copa_painel.campeao.nome}**")
+        else:
+            st.caption("🏆 Copa do Brasil: você foi eliminado")
+
     col_left, col_right = st.columns([3, 2])
 
     with col_left:
@@ -1445,19 +1499,52 @@ def tela_jogar():
         st.error("Nenhum time selecionado. Selecione um time para continuar.")
         return
 
-    if league.campeonato_encerrado or league.rodada_atual >= len(league.calendario):
+    copa = get_copa()
+    jogo_copa = (
+        copa.proximo_jogo(time.nome) if copa is not None and not copa.encerrada else None
+    )
+    divisao_encerrada = (
+        league.campeonato_encerrado or league.rodada_atual >= len(league.calendario)
+    )
+    if divisao_encerrada and jogo_copa is None:
         _tela_fim_temporada(time, league)
         return
 
-    st.markdown(
-        f"""
+    if divisao_encerrada:
+        fase_copa = copa.fases[-1].nome if copa is not None and copa.fases else "Copa"
+        assert jogo_copa is not None
+        _, casa_copa, fora_copa = jogo_copa
+        adversario_copa = fora_copa if casa_copa == time.nome else casa_copa
+        st.markdown(
+            f"""
+    <div class="hero" style="padding:1.4rem 1.6rem">
+        <h1 style="font-size:1.8rem">🏆 Copa do Brasil · {fase_copa}</h1>
+        <p>{escudo_img(time.sigla, time.escudo_emoji)} {time.nome} ·
+        {"em casa" if casa_copa == time.nome else "fora de casa"} contra {adversario_copa}</p>
+    </div>
+    """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
         <h1 style="font-size:1.8rem">⚽ Rodada {league.rodada_atual + 1} de {league.total_rodadas}</h1>
         <p>{escudo_img(time.sigla, time.escudo_emoji)} {time.nome} · {league.proximo_adversario(time.nome)}</p>
     </div>
     """,
-        unsafe_allow_html=True,
-    )
+            unsafe_allow_html=True,
+        )
+
+    if jogo_copa is not None:
+        rodada_copa, casa_copa, fora_copa = jogo_copa
+        adversario_copa = fora_copa if casa_copa == time.nome else casa_copa
+        fase_copa = copa.fases[-1].nome if copa is not None and copa.fases else "Copa"
+        st.caption(
+            f"🏆 **Copa do Brasil · {fase_copa}** — "
+            f"{'🏠 em casa' if casa_copa == time.nome else '✈️ fora de casa'} "
+            f"contra **{adversario_copa}** (rodada {rodada_copa} da temporada)"
+        )
 
     if len(time.titulares) != 11:
         st.warning(
@@ -1468,7 +1555,8 @@ def tela_jogar():
     # Encontrar adversário
     adversario = None
     em_casa = False
-    for casa, fora in league.calendario[league.rodada_atual]:
+    rodada_divisao = [] if divisao_encerrada else league.calendario[league.rodada_atual]
+    for casa, fora in rodada_divisao:
         if casa == time.nome:
             adversario = league._get_time_por_nome(fora)
             em_casa = True
@@ -1509,12 +1597,16 @@ def tela_jogar():
                 minha_divisao = divisao_do_jogador()
                 if piramide is not None:
                     rodadas = piramide.simular_rodada(time.nome)
+                    st.session_state.rodadas_simuladas = {
+                        d: rodada_de(d) for d in rodadas if d in piramide.divisoes
+                    }
                 else:
                     rodadas = {minha_divisao: league.simular_rodada(time.nome)}
+                    st.session_state.rodadas_simuladas = {
+                        minha_divisao: league.rodada_atual
+                    }
                 st.session_state.ultimo_resultado = rodadas.get(minha_divisao, [])
-                st.session_state.rodadas_simuladas = {
-                    d: rodada_de(d) for d in rodadas
-                }
+                st.session_state.ultimo_resultado_copa = rodadas.get("COPA", [])
                 st.rerun()
 
     # o que aconteceu nas outras divisões na mesma rodada
@@ -1563,6 +1655,46 @@ def tela_jogar():
                 secao("Eventos da Partida", "Narração")
                 _linha_do_tempo(meu_jogo.eventos)
 
+    # ---- jogo da copa na mesma rodada
+    for partida in st.session_state.get("ultimo_resultado_copa") or []:
+        if time.nome not in (partida.time_casa, partida.time_fora):
+            continue
+        meus = (
+            partida.gols_casa
+            if partida.time_casa == time.nome
+            else partida.gols_fora
+        )
+        deles = (
+            partida.gols_fora
+            if partida.time_casa == time.nome
+            else partida.gols_casa
+        )
+        cor = (
+            "linear-gradient(135deg,#16A34A,#065F46)"
+            if meus > deles
+            else "linear-gradient(135deg,#DC2626,#7F1D1D)"
+            if meus < deles
+            else "linear-gradient(135deg,#D97706,#92400E)"
+        )
+        secao(
+            f"🏆 Copa do Brasil · {partida.fase} ({partida.grupo})",
+            "Seu jogo na copa",
+        )
+        st.markdown(
+            f"""
+        <div class="score" style="--sc:{cor}">
+            <div class="teams">{partida.time_casa}
+                <span class="goals">{partida.gols_casa} x {partida.gols_fora}</span>
+                {partida.time_fora}</div>
+            <div class="pub">Público: {partida.publico:,}</div>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+        if partida.eventos:
+            _linha_do_tempo(partida.eventos)
+
+    if st.session_state.ultimo_resultado and league.rodada_atual > 0:
         secao("Outros Resultados", "Rodada")
         for partida in st.session_state.ultimo_resultado:
             if time.nome not in (partida.time_casa, partida.time_fora):
@@ -1633,6 +1765,8 @@ def _tela_fim_temporada(time: Time, league: League):
         if piramide is not None
         else []
     )
+    copa = get_copa()
+    copa_pendente = copa is not None and not copa.encerrada
 
     st.markdown(
         f"""
@@ -1689,14 +1823,16 @@ def _tela_fim_temporada(time: Time, league: League):
             st.rerun()
         return
 
-    # ---- outras divisões ainda em andamento
-    if outras_pendentes:
+    # ---- outras divisões (e a copa) ainda em andamento
+    if outras_pendentes or copa_pendente:
         nomes = ", ".join(NOMES_DIVISAO.get(d, d) for d in outras_pendentes)
+        if copa_pendente:
+            nomes = f"{nomes}, Copa do Brasil" if nomes else "Copa do Brasil"
         st.info(
-            f"⏳ {nomes} ainda está em andamento — a Série D tem calendário "
-            "mais longo. Feche a temporada para ver o resumo completo."
+            f"⏳ {nomes} ainda em andamento. Feche a temporada para ver o "
+            "resumo completo."
         )
-        if st.button("⏭️ Simular o restante das outras divisões", type="primary"):
+        if st.button("⏭️ Simular o restante da temporada", type="primary"):
             with st.spinner("Simulando o restante da temporada..."):
                 piramide.simular_restante()
             st.rerun()
@@ -1723,6 +1859,18 @@ def _tela_fim_temporada(time: Time, league: League):
                 f"{tabela[0]['pts']} pts · rodada {piramide.rodada(divisao)}/"
                 f"{piramide.total_rodadas(divisao)}</div></div>",
                 unsafe_allow_html=True,
+            )
+
+    if copa is not None:
+        secao("Copa do Brasil", "Mata-mata em ida e volta")
+        if copa.campeao is not None:
+            st.success(
+                f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**"
+            )
+        else:
+            fase = copa.fases[-1] if copa.fases else None
+            st.info(
+                f"⏳ Em andamento · {fase.nome if fase is not None else 'sem jogos'}"
             )
 
     if piramide.encerrada:
@@ -1824,6 +1972,76 @@ def _rodada_global(divisao: str, fase: FaseDivisao, rodada_da_fase: int) -> int:
     return base + rodada_da_fase
 
 
+def _copa_fase_html(fase: FaseCopa) -> str:
+    """HTML dos confrontos de uma fase da Copa do Brasil (agregado dos 2 jogos)."""
+    copa = get_copa()
+    time = get_meu_time()
+    linhas = []
+    for forte, fraco in fase.pares:
+        gols_forte = gols_fraco = 0
+        for i, rodada in enumerate(fase.rodadas):
+            casa, fora = (fraco, forte) if i == 0 else (forte, fraco)
+            partida = copa.partida(rodada, casa, fora) if copa is not None else None
+            if partida is None:
+                continue
+            if partida.time_casa == forte:
+                gols_forte += partida.gols_casa
+                gols_fraco += partida.gols_fora
+            else:
+                gols_forte += partida.gols_fora
+                gols_fraco += partida.gols_casa
+        vencedores = {t.nome for t in fase.vencedores}
+        cls_f = "v" if forte in vencedores else ("d" if vencedores else "")
+        cls_x = "v" if fraco in vencedores else ("d" if vencedores else "")
+        meu = time is not None and time.nome in (forte, fraco)
+        estilo = "border-color:var(--brand);background:#F2FBF5" if meu else ""
+        linhas.append(
+            f'<div class="res" style="{estilo}">'
+            f'<span class="tag {cls_f}">{sigla_de(forte)}</span>'
+            f"<span>{forte}</span>"
+            f"<span style='margin-left:auto'><b>{gols_forte} x {gols_fraco}</b></span>"
+            f"<span>{fraco}</span>"
+            f'<span class="tag {cls_x}">{sigla_de(fraco)}</span></div>'
+        )
+    return "".join(linhas)
+
+
+def _aba_copa_classificacao():
+    """Conteúdo da aba da Copa do Brasil nas classificações."""
+    copa = get_copa()
+    if copa is None:
+        st.info(
+            "A Copa do Brasil não foi montada nesta temporada (poucos clubes)."
+        )
+        return
+
+    fase = copa.fases[-1] if copa.fases else None
+    situacao = (
+        f"campeão: {copa.campeao.nome}"
+        if copa.campeao is not None
+        else (f"fase atual: {fase.nome}" if fase is not None else "sem jogos")
+    )
+    st.markdown(
+        f'<div class="club-meta">🏆 Copa do Brasil · {len(copa.times)} clubes · '
+        f"mata-mata em ida e volta · {situacao}</div>",
+        unsafe_allow_html=True,
+    )
+
+    if copa.campeao is not None:
+        st.success(f"🏆 Campeão: **{copa.campeao.nome}**")
+
+    for fase_copa in reversed(copa.fases):
+        estado = "encerrada" if fase_copa.concluida else "em disputa"
+        secao(
+            fase_copa.nome,
+            f"{len(fase_copa.pares)} confrontos · {estado}",
+        )
+        st.markdown(_copa_fase_html(fase_copa), unsafe_allow_html=True)
+
+    with st.expander("📖 Regulamento da Copa do Brasil"):
+        st.markdown("".join(f"- {regra}\n" for regra in REGULAMENTO_COPA))
+
+
 def tela_classificacao():
     time = get_meu_time()
     league = st.session_state.league
@@ -1845,7 +2063,10 @@ def tela_classificacao():
     )
 
     rotulos = [f"🏆 {NOMES_DIVISAO.get(d, d)}" for d in divisoes]
-    abas = st.tabs([*rotulos, "⚽ Artilharia"])
+    tem_copa = get_copa() is not None
+    abas = st.tabs(
+        [*rotulos, *(["🏆 Copa do Brasil"] if tem_copa else []), "⚽ Artilharia"]
+    )
 
     for aba, divisao in zip(abas, divisoes):
         with aba:
@@ -1933,6 +2154,10 @@ def tela_classificacao():
                     st.markdown(
                         "".join(f"- {regra}\n" for regra in regras)
                     )
+
+    if tem_copa:
+        with abas[len(divisoes)]:
+            _aba_copa_classificacao()
 
     with abas[-1]:
         divisao_art = st.selectbox(
@@ -2577,9 +2802,8 @@ def tela_criador():
             )
         with col_p2:
             st.caption(
-                "128 clubes · mata-mata em ida e volta da primeira fase até a "
-                "final, sem jogo único · As quatro divisões entram e as vagas "
-                "que sobram ficam com os clubes de melhor reputação."
+                "Competição avulsa, com 128 clubes em mata-mata de ida e volta. "
+                "A Copa do Brasil da carreira já vem no calendário da temporada."
             )
         if criar_copa:
             _criar_copa_do_brasil(
@@ -3058,7 +3282,14 @@ def tela_calendario():
         unsafe_allow_html=True,
     )
 
-    aba_rodadas, aba_meus = st.tabs(["📅 Rodadas por divisão", "🗓️ Meus jogos"])
+    copa = get_copa()
+    if copa is not None:
+        aba_rodadas, aba_copa, aba_meus = st.tabs(
+            ["📅 Rodadas por divisão", "🏆 Copa do Brasil", "🗓️ Meus jogos"]
+        )
+    else:
+        aba_rodadas, aba_meus = st.tabs(["📅 Rodadas por divisão", "🗓️ Meus jogos"])
+        aba_copa = None
 
     with aba_rodadas:
         col_div, col_rod = st.columns([1, 2])
@@ -3122,18 +3353,96 @@ def tela_calendario():
                 unsafe_allow_html=True,
             )
 
+    if aba_copa is not None and copa is not None:
+        with aba_copa:
+            rodadas_copa = copa_rodadas_com_jogos()
+            if not rodadas_copa:
+                st.info(
+                    "A Copa do Brasil ainda não tem jogos marcados nesta temporada."
+                )
+            else:
+                rodada_copa = st.selectbox(
+                    "Rodada da temporada",
+                    rodadas_copa,
+                    index=len(rodadas_copa) - 1,
+                    format_func=lambda r: (
+                        f"Rodada {r} · {data_da_rodada(minha, r):%d/%m/%Y}"
+                    ),
+                    key="calendario_copa_rodada",
+                )
+                confrontos_copa = copa_da_rodada(rodada_copa)
+                jogados = sum(1 for _, _, partida in confrontos_copa if partida)
+                st.markdown(
+                    f'<div class="club-meta">🏆 Copa do Brasil · {len(confrontos_copa)} '
+                    f"jogos nesta rodada · {jogados} já disputados · "
+                    f"{len(copa.times)} clubes</div>",
+                    unsafe_allow_html=True,
+                )
+                for casa, fora, partida in confrontos_copa:
+                    destaque = time is not None and time.nome in (casa, fora)
+                    estilo = (
+                        "border-color:var(--brand);background:#F2FBF5"
+                        if destaque
+                        else ""
+                    )
+                    if partida is not None:
+                        placar = f"<b>{partida.gols_casa} x {partida.gols_fora}</b>"
+                        extra = (
+                            f"{partida.fase} · {partida.grupo}"
+                            if partida.fase
+                            else "encerrado"
+                        )
+                    else:
+                        placar = "<span style='color:var(--ink-3)'>x</span>"
+                        extra = "a jogar"
+                    st.markdown(
+                        f"""
+                    <div class="res" style="{estilo}">
+                        <span>🏆 {casa} {placar} {fora}</span>
+                        <span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">{extra}</span>
+                    </div>
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
+            secao("Fases da copa", "Chave")
+            for fase in copa.fases:
+                estado = "encerrada" if fase.concluida else "em disputa"
+                st.markdown(
+                    f'<div class="res"><span>🏆 <b>{fase.nome}</b></span>'
+                    f'<span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">'
+                    f"{len(fase.pares)} confrontos · ida e volta · {estado}</span></div>",
+                    unsafe_allow_html=True,
+                )
+            if copa.campeao is not None:
+                st.success(
+                    f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**"
+                )
+
     with aba_meus:
         if time is None:
             st.info("Selecione um time para ver o seu calendário.")
             return
-        jogos = jogos_do_time(time.nome, minha)
+        jogos: list[tuple[int, str, str, Partida | None, str]] = [
+            (rodada, casa, fora, partida, "divisao")
+            for rodada, casa, fora, partida in jogos_do_time(time.nome, minha)
+        ]
+        piramide_atual = get_piramide()
+        if piramide_atual is not None:
+            jogos += [
+                (rodada, casa, fora, partida, "copa")
+                for rodada, casa, fora, partida in piramide_atual.copa_jogos_do_time(
+                    time.nome
+                )
+            ]
+        jogos.sort(key=lambda jogo: jogo[0])
         if not jogos:
             st.info("Sem jogos no calendário.")
             return
 
         vitorias = empates = derrotas = 0
         linhas = []
-        for rodada, casa, fora, partida in jogos:
+        for rodada, casa, fora, partida, competicao in jogos:
             data = data_da_rodada(minha, rodada)
             em_casa = casa == time.nome
             adversario = fora if em_casa else casa
@@ -3152,19 +3461,20 @@ def tela_calendario():
                 else:
                     tag, cls = "E", "e"
                     empates += 1
+            icone = "🏆" if competicao == "copa" else "⚽"
             linhas.append(
                 f"<div class='res'>"
                 f"<span class='tag {cls}'>{tag}</span>"
                 f"<span style='color:var(--ink-3);font-size:.8rem'>Rod. {rodada}</span>"
                 f"<span style='color:var(--ink-3);font-size:.8rem'>{data:%d/%m}</span>"
-                f"<span>{'🏠' if em_casa else '✈️'} {adversario}</span>"
+                f"<span>{icone} {'🏠' if em_casa else '✈️'} {adversario}</span>"
                 f"<span style='margin-left:auto'>{placar}</span>"
                 f"</div>"
             )
 
         secao(
             "Meus jogos",
-            f"{len(jogos)} jogos · {vitorias}V {empates}E {derrotas}D",
+            f"{len(jogos)} jogos (divisão + copa) · {vitorias}V {empates}E {derrotas}D",
         )
         st.markdown("".join(linhas), unsafe_allow_html=True)
 
@@ -3187,7 +3497,8 @@ def tela_resultados():
     )
 
     rotulos = [f"📊 {NOMES_DIVISAO.get(d, d)}" for d in divisoes]
-    abas = st.tabs(rotulos)
+    tem_copa = get_copa() is not None
+    abas = st.tabs([*rotulos, *(["🏆 Copa do Brasil"] if tem_copa else [])])
     for aba, divisao in zip(abas, divisoes):
         with aba:
             atual = rodada_de(divisao)
@@ -3224,6 +3535,50 @@ def tela_resultados():
                 if destaque and partida.eventos:
                     with st.expander("📋 Ver eventos da partida"):
                         _linha_do_tempo(partida.eventos)
+
+    if tem_copa:
+        copa = get_copa()
+        with abas[len(divisoes)]:
+            rodadas_copa = (
+                [r for r in sorted(copa.resultados) if copa.resultados[r]]
+                if copa is not None
+                else []
+            )
+            if not rodadas_copa:
+                st.info("Nenhum jogo da Copa do Brasil disputado ainda.")
+            else:
+                rodada_copa = st.selectbox(
+                    "Selecione a rodada",
+                    rodadas_copa,
+                    index=len(rodadas_copa) - 1,
+                    key="resultados_rodada_copa",
+                    format_func=lambda r: f"Rodada {r}",
+                )
+                partidas_copa = (
+                    copa.resultados.get(rodada_copa, []) if copa is not None else []
+                )
+                fase_nome = partidas_copa[0].fase if partidas_copa else ""
+                secao(f"Rodada {rodada_copa}", f"🏆 Copa do Brasil · {fase_nome}")
+                for partida in partidas_copa:
+                    destaque = time is not None and time.nome in (
+                        partida.time_casa,
+                        partida.time_fora,
+                    )
+                    st.markdown(
+                        f"""
+                    <div class="res" style="{ 'border-color:var(--brand);background:#F2FBF5' if destaque else '' }">
+                        <span style="{ 'font-weight:800' if destaque else '' }">🏆 {partida.time_casa}
+                        <b>{partida.gols_casa} x {partida.gols_fora}</b> {partida.time_fora}</span>
+                        <span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">
+                            {partida.grupo or 'jogo único'}
+                        </span>
+                    </div>
+                    """,
+                        unsafe_allow_html=True,
+                    )
+                    if destaque and partida.eventos:
+                        with st.expander("📋 Ver eventos da partida"):
+                            _linha_do_tempo(partida.eventos)
 
 
 # ============================================================
