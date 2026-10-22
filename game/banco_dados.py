@@ -10,7 +10,7 @@ consulta usada pelo jogo.
 
 Uso rapido
 ----------
->>> from game.dados import criar_times
+>>> from game.banco_dados import criar_times
 >>> times = criar_times()             # 20 clubes (Serie A) - padrao, como antes
 >>> times = criar_times(24)           # 24 clubes: os 20 da A + os 4 melhores da B
 >>> times = criar_times(divisao="B")  # so a Serie B (20 clubes)
