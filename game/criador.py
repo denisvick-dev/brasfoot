@@ -39,7 +39,7 @@ ATRIBUTOS = (
 )
 
 # perfis para geração rápida: (idade, base dos atributos)
-PERFIS = {
+PERFIS: dict[str, dict[str, tuple[int, int]]] = {
     "Promessa (17-21)": {"idade": (17, 21), "base": (45, 66)},
     "Mediano (22-28)": {"idade": (22, 28), "base": (52, 72)},
     "Craque (24-31)": {"idade": (24, 31), "base": (74, 93)},
@@ -53,7 +53,7 @@ ESCUDOS = ["⚽", "🔴", "🔵", "🟢", "🟡", "🟣", "🟠", "⚫", "⚪", 
 # Jogadores
 # ============================================================
 def criar_jogador(
-    nome: str,
+    nome: str | None,
     posicao: str,
     idade: int = 24,
     habilidade: int = 60,
@@ -84,7 +84,12 @@ def criar_jogador(
         nome=(nome or _nome_aleatorio()).strip(),
         posicao=posicao,
         idade=max(16, min(45, int(idade))),
-        **{k: max(1, min(99, int(v))) for k, v in valores.items()},
+        habilidade=max(1, min(99, int(habilidade))),
+        velocidade=max(1, min(99, int(velocidade))),
+        finalizacao=max(1, min(99, int(finalizacao))),
+        passe=max(1, min(99, int(passe))),
+        defesa=max(1, min(99, int(defesa))),
+        fisico=max(1, min(99, int(fisico))),
     )
 
 
@@ -123,7 +128,7 @@ def jogadores_salvos() -> list[dict]:
 
 def jogador_salvo(slug: str) -> Jogador | None:
     registro = persistencia.carregar("jogador", slug)
-    if not registro:
+    if not registro or not isinstance(registro.get("dados"), dict):
         return None
     return persistencia.jogador_de_dict(registro["dados"])
 
@@ -142,7 +147,9 @@ def _ajustar_elenco(elenco: list[Jogador], tamanho: int) -> list[Jogador]:
             [j for j in elenco if j.posicao == "GOL"], key=lambda j: j.overall, reverse=True
         )[:2]
         restantes = sorted(
-            [j for j in elenco if j not in gols], key=lambda j: j.overall, reverse=True
+            [j for j in elenco if all(j is not g for g in gols)],
+            key=lambda j: j.overall,
+            reverse=True,
         )
         return gols + restantes[: max(0, tamanho - len(gols))]
 
@@ -204,15 +211,12 @@ def criar_clube(
         tatica_ofensiva=max(0, min(100, int(tatica_ofensiva))),
     )
 
-    try:
-        time.divisao = divisao
-        time.estadio = estadio or f"Estádio {nome}"
-        time.capacidade = int(capacidade)
-        time.fundacao = int(fundacao)
-        time.rival = (rival or "").upper()[:4] or None
-        time.origem = "custom"
-    except Exception:
-        pass
+    time.divisao = divisao
+    time.estadio = estadio or f"Estádio {nome}"
+    time.capacidade = int(capacidade)
+    time.fundacao = int(fundacao)
+    time.rival = (rival or "").upper()[:4] or None
+    time.origem = "custom"
 
     time.auto_escalar()
     return time
@@ -230,7 +234,7 @@ def clubes_salvos() -> list[dict]:
 
 def clube_salvo(slug: str) -> Time | None:
     registro = persistencia.carregar("clube", slug)
-    if not registro:
+    if not registro or not isinstance(registro.get("dados"), dict):
         return None
     return persistencia.time_de_dict(registro["dados"])
 

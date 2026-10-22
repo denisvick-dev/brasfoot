@@ -37,7 +37,7 @@ from game.criador import (
 )
 from game.liga import League
 from game.mercado import Market
-from game.modelos import Noticia, Time
+from game.modelos import Jogador, Noticia, Time
 
 # ============================================================
 # Configuração da página
@@ -623,9 +623,11 @@ def tela_inicial():
                     use_container_width=True,
                     type="primary",
                 ):
+                    # a lista pode incluir clubes criados pelo jogador
+                    st.session_state.times = times
                     st.session_state.meu_time = time.nome
-                    st.session_state.league = League(st.session_state.times)
-                    st.session_state.market = Market(st.session_state.times)
+                    st.session_state.league = League(times)
+                    st.session_state.market = Market(times)
                     st.session_state.game_started = True
                     st.session_state.pagina = "painel"
                     st.rerun()
@@ -913,7 +915,7 @@ def tela_elenco():
     _mostrar_jogadores_tabela([j for j in jogadores if not j.titular])
 
 
-def _mostrar_jogadores_tabela(jogadores: list):
+def _mostrar_jogadores_tabela(jogadores: list[Jogador]):
     if not jogadores:
         st.caption("Nenhum jogador.")
         return
@@ -979,7 +981,9 @@ def tela_tatica():
         formacao = st.selectbox(
             "Escolha a formação",
             formacoes,
-            index=formacoes.index(time.formacao),
+            index=formacoes.index(time.formacao)
+            if time.formacao in formacoes
+            else 0,
             label_visibility="collapsed",
         )
         if formacao != time.formacao:
@@ -1077,7 +1081,7 @@ def _descricao_estilo(valor: int) -> str:
     return "🔥 **Ataque Total** — todos no ataque, defesa exposta."
 
 
-def _chip(j) -> str:
+def _chip(j: Jogador) -> str:
     return (
         f"<span class='chip'>{cor_posicao(j.posicao)} {j.nome} "
         f"<span class='ovr'>{j.overall}</span> "
@@ -1123,7 +1127,7 @@ def tela_jogar():
         st.error("Nenhum time selecionado. Selecione um time para continuar.")
         return
 
-    if league.campeonato_encerrado:
+    if league.campeonato_encerrado or league.rodada_atual >= len(league.calendario):
         _tela_fim_temporada(time, league)
         return
 
@@ -1258,7 +1262,7 @@ def _cartao_time(time: Time, local: str) -> str:
     """
 
 
-def _linha_do_tempo(eventos: list):
+def _linha_do_tempo(eventos: list[str]):
     itens = []
     for ev in eventos:
         if "GOOOL" in ev:
@@ -1314,6 +1318,7 @@ def _tela_fim_temporada(time: Time, league: League):
         league.resultados = {}
         league.noticias = []
         league._gerar_calendario()
+        st.session_state.ultimo_resultado = None
         for t in league.times:
             t.resetar_campeonato()
             t.auto_escalar()
@@ -1801,6 +1806,7 @@ def tela_criador():
                         ("Defesa", jog.defesa),
                         ("Físico", jog.fisico),
                     ],
+                    strict=False,
                 ):
                     col.metric(rotulo, valor)
             with c_dir:
@@ -1927,8 +1933,13 @@ def tela_criador():
                     time = clube_salvo(reg["slug"])
                     if time:
                         st.session_state.setdefault("clubes_custom", [])
-                        st.session_state.clubes_custom.append(time)
-                        st.success(f"✅ {time.nome} entra no próximo jogo!")
+                        if time.nome not in [
+                            t.nome for t in st.session_state.clubes_custom
+                        ]:
+                            st.session_state.clubes_custom.append(time)
+                            st.success(f"✅ {time.nome} entra no próximo jogo!")
+                        else:
+                            st.info("Esse clube já está na lista.")
                 if c3.button("🗑️", key=f"del_clube_{reg['slug']}"):
                     excluir_clube(reg["slug"])
                     st.rerun()
@@ -1950,7 +1961,7 @@ def tela_criador():
                     unsafe_allow_html=True,
                 )
                 meu_time = get_meu_time()
-                if meu_time and c3.button(
+                if j is not None and meu_time and c3.button(
                     "Contratar", key=f"usar_jog_{reg['slug']}"
                 ):
                     if len(meu_time.jogadores) >= 30:
@@ -1989,7 +2000,7 @@ def tela_criador():
                             times = resolver_times(nomes)
                             indice = {t.nome: t for t in times}
                             camp = Campeonato.de_dict(
-                                dados, lambda n: indice.get(n)
+                                dados, lambda n, i=indice: i.get(n)
                             )
                             st.session_state.competicao = camp
                             st.session_state.pagina = "competicao"
@@ -2132,16 +2143,16 @@ def tela_competicao():
             a, b = confronto.a, confronto.b
             if a is None and b is None:
                 continue
-            if b is None:
+            if a is None:
                 st.markdown(
-                    f'<div class="res">🎟️ <b>{a.escudo_emoji} {a.nome}</b> '
+                    f'<div class="res">🎟️ <b>{b.escudo_emoji} {b.nome}</b> '
                     f'<span class="tag e" style="margin-left:auto">Folga (BYE)</span></div>',
                     unsafe_allow_html=True,
                 )
                 continue
-            if a is None:
+            if b is None:
                 st.markdown(
-                    f'<div class="res">🎟️ <b>{b.escudo_emoji} {b.nome}</b> '
+                    f'<div class="res">🎟️ <b>{a.escudo_emoji} {a.nome}</b> '
                     f'<span class="tag e" style="margin-left:auto">Folga (BYE)</span></div>',
                     unsafe_allow_html=True,
                 )

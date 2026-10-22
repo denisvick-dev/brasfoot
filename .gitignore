@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# dados gerados em tempo de execução (clubes, jogadores e campeonatos salvos)
+dados/
+
+# screenshots gerados por shots.py
+shots/

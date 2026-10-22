@@ -90,8 +90,6 @@ class League:
             time_casa = self._get_time_por_nome(casa_nome)
             time_fora = self._get_time_por_nome(fora_nome)
 
-            is_player = casa_nome == time_jogador or fora_nome == time_jogador
-
             partida = self.engine.simular(
                 time_casa,
                 time_fora,
@@ -163,12 +161,10 @@ class League:
             # Re-escalar times da CPU (já considera energia)
             time.auto_escalar()
 
-            # Re-escalar times da CPU
-            time.auto_escalar()
-
     @property
     def classificacao(self) -> list[Time]:
         """Retorna a classificação ordenada."""
+        # critérios do Brasileirão: pontos, vitórias, saldo, gols pró
         return sorted(
             self.times,
             key=lambda t: (t.pontos, t.vitorias, t.saldo_gols, t.gols_pro),

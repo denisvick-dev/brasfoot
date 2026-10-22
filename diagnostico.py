@@ -12,6 +12,7 @@ Uso:
 import random
 import statistics
 import time
+from collections.abc import Sequence
 
 from game.banco_dados import criar_times, buscar_clube
 from game.campeonato import League
@@ -24,17 +25,17 @@ METAS = {
 }
 
 
-def pearson(xs, ys):
+def pearson(xs: Sequence[float], ys: Sequence[float]) -> float:
     n = len(xs)
     mx, my = sum(xs) / n, sum(ys) / n
-    num = sum((a - mx) * (b - my) for a, b in zip(xs, ys))
+    num = sum((a - mx) * (b - my) for a, b in zip(xs, ys, strict=True))
     den = (sum((a - mx) ** 2 for a in xs) ** 0.5) * (
         sum((b - my) ** 2 for b in ys) ** 0.5
     )
     return num / den if den else 0.0
 
 
-def spearman(xs, ys):
+def spearman(xs: Sequence[float], ys: Sequence[float]) -> float:
     def posto(v):
         ordem = sorted(range(len(v)), key=lambda i: v[i])
         r = [0] * len(v)
@@ -45,7 +46,7 @@ def spearman(xs, ys):
     return pearson(posto(xs), posto(ys))
 
 
-def temporada(n_times, semente):
+def temporada(n_times: int, semente: int) -> dict[str, float]:
     random.seed(semente)
     times = criar_times(n_times)
     sigla_por_nome = {t.nome: t.sigla for t in times}
@@ -65,8 +66,8 @@ def temporada(n_times, semente):
                 casa += 1
             else:
                 fora += 1
-            cap = buscar_clube(sigla_por_nome[p.time_casa]).capacidade
-            if p.publico > cap:
+            clube = buscar_clube(sigla_por_nome[p.time_casa])
+            if clube is not None and p.publico > clube.capacidade:
                 publico_acima += 1
 
     tabela = liga.classificacao
@@ -78,7 +79,8 @@ def temporada(n_times, semente):
         "mandante %": 100 * casa / jogos,
         "visitante %": 100 * fora / jogos,
         "corr ovr x pts": spearman(
-            [t.overall_time for t in tabela], [t.pontos for t in tabela]
+            [float(t.overall_time) for t in tabela],
+            [float(t.pontos) for t in tabela],
         ),
         "caixa negativo": sum(1 for t in times if t.financas < 0),
         "artilheiro": liga.artilharia(1)[0][0].gols if liga.artilharia(1) else 0,
@@ -89,9 +91,9 @@ def temporada(n_times, semente):
     }
 
 
-def medir(n_times, temporadas, semente=1):
+def medir(n_times: int, temporadas: int, semente: int = 1) -> None:
     print(f"\n=== {n_times} clubes, {temporadas} temporada(s) ===")
-    acc = {}
+    acc: dict[str, list[float]] = {}
     for s in range(semente, semente + temporadas):
         r = temporada(n_times, s)
         for k, v in r.items():

@@ -21,7 +21,7 @@ class Market:
         self.ofertas_disponiveis = []
         for time in self.times:
             # Cada time pode disponibilizar 1-3 jogadores
-            reservas = [j for j in time.reservas if not j.titular]
+            reservas = time.reservas
             if reservas:
                 qtd = random.randint(1, min(3, len(reservas)))
                 disponiveis = random.sample(reservas, qtd)
@@ -47,6 +47,7 @@ class Market:
         jogador.titular = False
         time_comprador.jogadores.append(jogador)
         time_comprador.auto_escalar()
+        time_vendedor.auto_escalar()
 
         # Remover da lista de ofertas
         self.ofertas_disponiveis = [
@@ -60,16 +61,21 @@ class Market:
         if len(time_jogador.jogadores) <= 16:
             return False, "❌ Elenco muito pequeno para vender!"
 
+        # Precisa existir um clube comprador antes de mexer no elenco
+        outros = [t for t in self.times if t is not time_jogador]
+        if not outros:
+            return False, "❌ Não há outro clube para receber o jogador!"
+
         preco = int(jogador.valor_mercado * random.uniform(0.6, 1.1))
         time_jogador.financas += preco
         time_jogador.jogadores.remove(jogador)
 
-        # Adicionar a um time aleatório
-        outros = [t for t in self.times if t != time_jogador]
         destino = random.choice(outros)
+        jogador.titular = False
         destino.jogadores.append(jogador)
         destino.financas -= preco
         destino.auto_escalar()
+        time_jogador.auto_escalar()
 
         return (
             True,

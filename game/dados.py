@@ -2,12 +2,16 @@
 Alias de compatibilidade.
 
 O módulo de dados chama-se ``game.banco_dados`` (é o nome que ``mercado.py``
-importa). Este arquivo só faz com que ``game.dados`` aponte para ele, para que
-qualquer código escrito com o nome antigo continue funcionando.
+importa). Este arquivo só reexporta tudo, para que qualquer código escrito
+com o nome antigo (``game.dados``) continue funcionando.
 """
 
-import sys
-
-from game import banco_dados
-
-sys.modules[__name__] = banco_dados
+from game.banco_dados import *  # noqa: F401,F403
+from game.banco_dados import (  # noqa: F401  (helpers "privados" usados fora)
+    _criar_jogador,
+    _criar_time_de_ficha,
+    _gerar_elenco,
+    _gerar_jogadores_posicao,
+    _next_id,
+    _nome_aleatorio,
+)

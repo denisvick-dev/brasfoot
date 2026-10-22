@@ -160,6 +160,14 @@ class Time:
     gols_contra: int = 0
     jogos_campeonato: int = 0
 
+    # ---- ficha do clube (preenchida pelo banco de dados / criador) ----
+    divisao: str = "A"
+    estadio: str = ""
+    capacidade: int = 30_000
+    fundacao: int = 0
+    rival: str | None = None
+    origem: str = "banco"
+
     @property
     def saldo_gols(self) -> int:
         return self.gols_pro - self.gols_contra
