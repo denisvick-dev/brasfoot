@@ -78,3 +78,24 @@ def disponiveis() -> int:
     from game.clubes import TIMES_DATA
 
     return sum(1 for c in TIMES_DATA if tem_escudo(c.sigla))
+
+
+def faltando() -> list[str]:
+    """Siglas de clubes do banco que ficaram sem arquivo em ``assets/escudos``."""
+    from game.clubes import TIMES_DATA
+
+    return sorted({c.sigla for c in TIMES_DATA if not tem_escudo(c.sigla)})
+
+
+def orfaos() -> list[str]:
+    """Arquivos de ``assets/escudos`` cujo nome não é a sigla de nenhum clube."""
+    from game.clubes import TIMES_DATA
+
+    siglas = {c.sigla for c in TIMES_DATA}
+    return sorted(
+        {
+            arquivo.stem
+            for arquivo in DIRETORIO.iterdir()
+            if arquivo.suffix in _EXTENSOES and arquivo.stem not in siglas
+        }
+    )
