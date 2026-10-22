@@ -27,7 +27,7 @@ from game.banco_dados import (
 from game.modelos import Jogador, Time
 
 POSICOES = ("GOL", "ZAG", "LAT", "VOL", "MEI", "ATA")
-DIVISOES = ("A", "B", "C")
+DIVISOES = ("A", "B", "C", "D")
 
 ATRIBUTOS = (
     "habilidade",
