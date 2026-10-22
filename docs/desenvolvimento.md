@@ -25,14 +25,14 @@ python shots.py           # screenshots das telas (app rodando + playwright)
 ## Testes
 
 ```bash
-pytest                 # suíte completa (62 testes, ~3 s)
+pytest                 # suíte completa (66 testes, ~4 s)
 pytest -k piramide     # só um arquivo/tema
 pytest -v              # nome de cada teste
 ```
 
 A suíte cobre modelos, banco de clubes e escudos, campeonato, copa, pirâmide
 (acesso/descenso), motor, mercado, finanças/rotina, diretoria,
-criador/persistência e um smoke test das telas com `streamlit.testing.v1.AppTest` (o app precisa montar sem exceção).
+criador/persistência, progresso da simulação e um smoke test das telas com `streamlit.testing.v1.AppTest` (o app precisa montar sem exceção).
 
 ## Lint e tipos
 

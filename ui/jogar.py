@@ -2,6 +2,8 @@
 Tela de partida: pré-jogo, jogo ao vivo e fim de temporada.
 """
 
+import time as _time
+
 import streamlit as st
 
 from game.banco_dados import (
@@ -131,33 +133,51 @@ def tela_jogar():
             "⚽ SIMULAR RODADA", type="primary", use_container_width=True
         )
     if simular:
-        with st.spinner("⚽ Simulando a rodada..."):
-            if piramide is not None:
-                jogos = piramide.simular_rodada(time.nome)
-                minha_divisao = divisao_do_jogador()
-                st.session_state.ultimo_resultado = jogos.get(minha_divisao, [])
-                st.session_state.rodadas_simuladas = {
-                    d: rodada_de(d) for d in jogos if d in piramide.divisoes
-                }
-                st.session_state.ultima_rodada = [
-                    (_rotulo_competicao(chave), partida)
-                    for chave, partidas in jogos.items()
-                    for partida in partidas
-                    if time.nome in (partida.time_casa, partida.time_fora)
-                ]
-                st.session_state.resultados_copa = jogos.get("COPA", [])
-            else:
-                jogos_div = league.simular_rodada(time.nome)
-                minha_divisao = divisao_do_jogador()
-                st.session_state.ultimo_resultado = jogos_div
-                st.session_state.rodadas_simuladas = {
-                    minha_divisao: league.rodada_atual
-                }
-                st.session_state.ultima_rodada = [
-                    (NOMES_DIVISAO.get(minha_divisao, "Campeonato"), partida)
-                    for partida in jogos_div
-                    if time.nome in (partida.time_casa, partida.time_fora)
-                ]
+        barra = st.progress(0.0, text="⚽ Preparando a rodada...")
+        inicio = _time.time()
+
+        def _progresso(fracao: float, rotulo: str) -> None:
+            barra.progress(min(1.0, fracao), text=f"⚽ Simulando {rotulo}...")
+
+        if piramide is not None:
+            jogos = piramide.simular_rodada(time.nome, progresso=_progresso)
+            minha_divisao = divisao_do_jogador()
+            st.session_state.ultimo_resultado = jogos.get(minha_divisao, [])
+            st.session_state.rodadas_simuladas = {
+                d: rodada_de(d) for d in jogos if d in piramide.divisoes
+            }
+            st.session_state.ultima_rodada = [
+                (_rotulo_competicao(chave), partida)
+                for chave, partidas in jogos.items()
+                for partida in partidas
+                if time.nome in (partida.time_casa, partida.time_fora)
+            ]
+            st.session_state.resultados_copa = jogos.get("COPA", [])
+            st.session_state.placares_rodada = {
+                _rotulo_competicao(chave): partidas
+                for chave, partidas in jogos.items()
+                if partidas
+            }
+        else:
+            jogos_div = league.simular_rodada(time.nome, progresso=_progresso)
+            minha_divisao = divisao_do_jogador()
+            st.session_state.ultimo_resultado = jogos_div
+            st.session_state.rodadas_simuladas = {minha_divisao: league.rodada_atual}
+            st.session_state.ultima_rodada = [
+                (NOMES_DIVISAO.get(minha_divisao, "Campeonato"), partida)
+                for partida in jogos_div
+                if time.nome in (partida.time_casa, partida.time_fora)
+            ]
+            st.session_state.placares_rodada = {
+                NOMES_DIVISAO.get(minha_divisao, "Campeonato"): jogos_div
+            }
+
+        st.session_state.placares_rodada_numero = rodada_global
+        barra.progress(1.0, text="✅ Rodada simulada — confira os placares abaixo")
+        # deixa a barra visível por um instante (a rodada roda em milissegundos)
+        decorrido = _time.time() - inicio
+        if decorrido < 0.7:
+            _time.sleep(0.7 - decorrido)
         st.rerun()
 
     meus_jogos = st.session_state.get("ultima_rodada") or []
@@ -166,22 +186,15 @@ def tela_jogar():
         for rotulo, partida in meus_jogos:
             _card_resultado(partida, time, rotulo)
 
-    outros = [
-        partida
-        for partida in (st.session_state.get("ultimo_resultado") or [])
-        if time.nome not in (partida.time_casa, partida.time_fora)
-    ]
-    if outros:
-        secao("Outros resultados", NOMES_DIVISAO.get(divisao_do_jogador(), "Divisão"))
-        for partida in outros:
-            st.markdown(
-                f'<div class="res">⚽ <span>{escudo_img(sigla_de(partida.time_casa))} '
-                f"<b>{partida.time_casa}</b></span>"
-                f"<span class='res-score'>{partida.gols_casa} x {partida.gols_fora}</span>"
-                f'<span style="margin-left:auto"><b>{partida.time_fora}</b> '
-                f"{escudo_img(sigla_de(partida.time_fora))}</span></div>",
-                unsafe_allow_html=True,
-            )
+    placares = st.session_state.get("placares_rodada") or {}
+    numero = st.session_state.get("placares_rodada_numero")
+    if placares:
+        total_jogos = sum(len(partidas) for partidas in placares.values())
+        secao(
+            "Placares da rodada",
+            f"Rodada {numero} · {total_jogos} jogos" if numero else f"{total_jogos} jogos",
+        )
+        st.markdown(_html_placares(placares), unsafe_allow_html=True)
 
     outras = [d for d in divisoes_da_temporada() if d != divisao_do_jogador()]
     pendentes = [d for d in outras if rodada_de(d) > 0]
@@ -191,6 +204,35 @@ def tela_jogar():
             for d in pendentes
         )
         st.caption(f"🌎 Também na temporada: {resumo_divisoes}")
+
+
+def _placar_linha(partida: Partida) -> str:
+    """Uma linha de placar: mandante, gols e visitante, com escudos."""
+    casa = escudo_img(sigla_de(partida.time_casa))
+    fora = escudo_img(sigla_de(partida.time_fora))
+    return (
+        "<div class='placar-linha'>"
+        f"<span class='pc-time'>{casa} {partida.time_casa}</span>"
+        f"<span class='pc-score'>{partida.gols_casa}<i>x</i>{partida.gols_fora}</span>"
+        f"<span class='pc-time right'>{partida.time_fora} {fora}</span>"
+        "</div>"
+    )
+
+
+def _html_placares(placares: dict[str, list[Partida]]) -> str:
+    """Quadro com todos os placares da rodada, separados por competição."""
+    blocos = []
+    for rotulo, partidas in placares.items():
+        if not partidas:
+            continue
+        linhas = "".join(_placar_linha(partida) for partida in partidas)
+        blocos.append(
+            f"<div class='placar-bloco'><h4>{rotulo}"
+            f"<span>{len(partidas)} jogos</span></h4>{linhas}</div>"
+        )
+    if not blocos:
+        return ""
+    return f"<div class='placares'>{''.join(blocos)}</div>"
 
 
 def _card_resultado(partida: Partida, time: Time, rotulo: str) -> None:

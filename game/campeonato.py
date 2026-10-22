@@ -3,6 +3,7 @@ Gerenciamento do campeonato (Brasileirão).
 """
 
 import random
+from collections.abc import Callable
 
 from game import rotina
 from game.jogo_engine import MatchEngine
@@ -78,8 +79,12 @@ class League:
                 return t
         raise ValueError(f"Time '{nome}' não encontrado!")
 
-    def simular_rodada(self, time_jogador: str) -> list[Partida]:
-        """Simula todos os jogos da rodada atual."""
+    def simular_rodada(
+        self,
+        time_jogador: str,
+        progresso: Callable[[float, str], None] | None = None,
+    ) -> list[Partida]:
+        """Simula todos os jogos da rodada atual (avisa o progresso jogo a jogo)."""
         if self.rodada_atual >= self.total_rodadas:
             self.campeonato_encerrado = True
             return []
@@ -87,7 +92,13 @@ class League:
         jogos = self.calendario[self.rodada_atual]
         resultados = []
 
-        for casa_nome, fora_nome in jogos:
+        total = max(1, len(jogos))
+        for indice, (casa_nome, fora_nome) in enumerate(jogos, start=1):
+            if progresso is not None:
+                progresso(
+                    indice / total,
+                    f"{casa_nome} x {fora_nome}",
+                )
             time_casa = self._get_time_por_nome(casa_nome)
             time_fora = self._get_time_por_nome(fora_nome)
 

@@ -21,7 +21,12 @@ O projeto usa versionamento semântico.
   tela de finanças.
 - **Barra de status** no topo, estilo Brasfoot: clube, série, rodada, posição
   e caixa.
-- Testes de finanças, rotina e diretoria (62 no total).
+- **Barra de carregamento** ao simular a rodada: mostra a competição em
+  andamento (Série A, B, C, D, Copa, regionais) e o jogo sendo simulado no
+  campeonato avulso, com um instante de pausa para dar para acompanhar.
+- **Placares da rodada** na tela de jogo: todos os jogos da rodada, agrupados
+  por competição (estilo Brasfoot), com escudo, mandante, visitante e placar.
+- Testes de finanças, rotina, diretoria e progresso da simulação (66 no total).
 
 ### Corrigido
 

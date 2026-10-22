@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import datetime as dt
 import random
+from collections.abc import Callable
 
 from game import financas, rotina
 from game.copa import CopaBrasil
@@ -46,6 +47,14 @@ def data_da_rodada(rodada: int, temporada: int = 2026) -> dt.date:
     """Data fictícia de uma rodada: uma por semana, a partir de abril."""
     inicio = dt.date(temporada, MES_INICIO, DIA_INICIO)
     return inicio + dt.timedelta(days=DIAS_POR_RODADA * (rodada - 1))
+
+
+def _avisar(
+    progresso: Callable[[float, str], None] | None, fracao: float, rotulo: str
+) -> None:
+    """Avisa a interface (se ela pediu) qual competição está sendo simulada."""
+    if progresso is not None:
+        progresso(max(0.0, min(1.0, fracao)), rotulo)
 
 
 class Piramide:
@@ -207,9 +216,18 @@ class Piramide:
             total += 1
         return total
 
-    def simular_rodada(self, time_jogador: str = "") -> dict[str, list[Partida]]:
-        """Joga a rodada da temporada e roda a rotina entre rodadas."""
-        jogos = self._simular_rodada(time_jogador)
+    def simular_rodada(
+        self,
+        time_jogador: str = "",
+        progresso: Callable[[float, str], None] | None = None,
+    ) -> dict[str, list[Partida]]:
+        """
+        Joga a rodada da temporada e roda a rotina entre rodadas.
+
+        ``progresso`` é chamado como ``progresso(fração, rótulo)`` antes de cada
+        competição simulada, para a interface desenhar a barra de carregamento.
+        """
+        jogos = self._simular_rodada(time_jogador, progresso)
         if not self.encerrada:
             rotina.entre_rodadas(
                 self.times, self._rodada, self.engine.RODADAS_POR_MES
@@ -218,14 +236,20 @@ class Piramide:
             self.premiar_temporada()
         return jogos
 
-    def _simular_rodada(self, time_jogador: str = "") -> dict[str, list[Partida]]:
+    def _simular_rodada(
+        self,
+        time_jogador: str = "",
+        progresso: Callable[[float, str], None] | None = None,
+    ) -> dict[str, list[Partida]]:
         """Joga a rodada da temporada: regionais, divisões/copa ou Supercopa."""
         jogos: dict[str, list[Partida]] = {}
         self._rodada += 1
 
         # início do ano: só os torneios regionais
         if self._rodada <= self.rodadas_regionais:
-            for torneio in self.regionais:
+            total = max(1, len(self.regionais))
+            for indice, torneio in enumerate(self.regionais, start=1):
+                _avisar(progresso, indice / total, torneio.nome)
                 partidas = torneio.simular_rodada_global(
                     self._rodada, time_jogador
                 )
@@ -235,12 +259,16 @@ class Piramide:
 
         # meio do ano: divisões + Copa do Brasil
         if not self.fases_finais_encerradas:
-            for divisao in self.ordem:
-                temporada = self.divisoes[divisao]
-                if temporada.encerrada:
-                    continue
-                jogos[divisao] = temporada.simular_rodada(time_jogador)
+            ativas = [d for d in self.ordem if not self.divisoes[d].encerrada]
+            total = max(1, len(ativas) + (1 if self.copa is not None else 0))
+            feito = 0
+            for divisao in ativas:
+                feito += 1
+                _avisar(progresso, feito / total, f"Série {divisao}")
+                jogos[divisao] = self.divisoes[divisao].simular_rodada(time_jogador)
             if self.copa is not None:
+                feito += 1
+                _avisar(progresso, feito / total, "Copa do Brasil")
                 partidas = self.copa.simular_rodada_global(
                     self._rodada, time_jogador
                 )
@@ -249,6 +277,7 @@ class Piramide:
             return jogos
 
         # fim do ano: Supercopa do Brasil
+        _avisar(progresso, 0.5, "Supercopa do Brasil")
         partida = self._jogar_supercopa(time_jogador)
         if partida is not None:
             jogos["SUPERCOPA"] = [partida]

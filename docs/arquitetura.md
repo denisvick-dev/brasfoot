@@ -3,7 +3,9 @@
 ## Mapa dos módulos
 
 - `ui/` — interface Streamlit (uma tela por módulo; `estilos.py` tem o tema,
-  `apoio.py` as funções compartilhadas e a barra de status).
+  `apoio.py` as funções compartilhadas e a barra de status). `ui/jogar.py`
+  simula a rodada com barra de progresso (`Piramide.simular_rodada(progresso=…)`)
+  e monta o quadro com os placares de todas as competições da rodada.
 - `game/` — simulação, sem Streamlit:
   - `modelos.py` (Jogador, Time, Partida, Noticia)
   - `jogo_engine.py` (motor da partida)

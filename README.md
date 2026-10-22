@@ -32,7 +32,8 @@ python diagnostico.py       # calibragem do motor (gols, empates, mando de campo
 - **Escolher ou criar** seu clube (escudo, cores, estádio, orçamento e elenco).
 - **Elenco e tática**: formação, estilo de jogo (retranca ↔ ataque total),
   escalação manual ou automática, energia, cartões, lesões e suspensões.
-- **Jogar rodada a rodada**, com narração do jogo e tabela ao vivo.
+- **Jogar rodada a rodada**, com barra de carregamento, narração do jogo e
+  **todos os placares da rodada** na mesma tela, separados por competição.
 - **Quatro divisões** com regulamentos diferentes (turno e returno, turno único
   e mata-mata), acesso e descenso ao fim da temporada.
 - **Copa do Brasil**, **regionais** e **Supercopa** no mesmo calendário.
@@ -105,7 +106,7 @@ tests/                 suíte pytest
 pip install -r requirements-dev.txt
 ruff check .      # lint
 pyright .         # tipos (mesmo resultado do Pylance)
-pytest            # 62 testes
+pytest            # 66 testes
 ```
 
 O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.

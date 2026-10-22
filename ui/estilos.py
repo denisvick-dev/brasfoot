@@ -543,6 +543,81 @@ hr{ border-color:var(--line); }
 }
 .status-bar .sb-item b{ color:#FFFFFF; font-weight:800; }
 .status-bar .sb-right{ margin-left:auto; font-variant-numeric:tabular-nums; }
+/* ---------- placares da rodada ---------- */
+.placares{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));
+    gap:.7rem;
+    margin:.2rem 0 .9rem;
+}
+.placar-bloco{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:var(--shadow-sm);
+}
+.placar-bloco h4{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.5rem;
+    margin:0;
+    padding:.5rem .7rem;
+    font-family:var(--font-display);
+    font-size:.82rem;
+    letter-spacing:.02em;
+    background:var(--surface-2);
+    border-bottom:1px solid var(--line);
+}
+.placar-bloco h4 span{
+    font-family:var(--font-ui);
+    font-weight:700;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--ink-3);
+}
+.placar-linha{
+    display:flex;
+    align-items:center;
+    gap:.45rem;
+    padding:.34rem .6rem;
+    font-size:.84rem;
+    border-top:1px solid var(--line-2);
+}
+.placar-linha:first-of-type{ border-top:none; }
+.placar-linha .pc-time{
+    display:flex;
+    align-items:center;
+    gap:.35rem;
+    flex:1 1 0;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.placar-linha .pc-time.right{ justify-content:flex-end; }
+.placar-linha .pc-time img{ width:16px; height:16px; object-fit:contain; flex:none; }
+.placar-linha .pc-score{
+    flex:none;
+    min-width:52px;
+    text-align:center;
+    font-family:var(--font-display);
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:.1rem .35rem;
+}
+.placar-linha .pc-score i{
+    font-style:normal;
+    font-weight:600;
+    color:var(--ink-3);
+    font-size:.72rem;
+    margin:0 .18rem;
+}
 </style>
 """,
         unsafe_allow_html=True,
