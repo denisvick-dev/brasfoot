@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# Ferramentas de desenvolvimento (não são necessárias para jogar)
+playwright>=1.40   # usado por shots.py para tirar screenshots
+ruff>=0.5
+pyright>=1.1

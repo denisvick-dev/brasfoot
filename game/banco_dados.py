@@ -19,6 +19,7 @@ Uso rapido
 """
 
 import random
+
 from game.clubes import (
     DIVISOES,
     NOMES_DIVISAO,

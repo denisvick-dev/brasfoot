@@ -118,7 +118,10 @@ class CopaBrasil:
     def _primeira_fase(
         self, fortes: list[Time], fracos: list[Time]
     ) -> FaseCopa:
-        pares = [(forte.nome, fraco.nome) for forte, fraco in zip(fortes, fracos)]
+        pares = [
+            (forte.nome, fraco.nome)
+            for forte, fraco in zip(fortes, fracos, strict=True)
+        ]
         return FaseCopa(
             nome=NOMES_FASES.get(len(self.times), "Primeira fase"),
             pares=pares,

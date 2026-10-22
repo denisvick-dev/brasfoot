@@ -23,7 +23,7 @@ game/mercado.py      Market (transferências)
 ## Como rodar
 
 ```bash
-pip install -r requirements.txt   # streamlit + playwright
+pip install -r requirements.txt   # streamlit
 
 streamlit run app.py      # interface do jogo
 # http://localhost:8501
@@ -196,13 +196,18 @@ no jogo.
 ### Tipos / Pylance
 
 O projeto passa **sem erros e sem warnings** no Pylance (mesma engine do
-Pyright) quando o interpretador tem as dependências do `requirements.txt`:
+Pyright) quando o interpretador tem as dependências instaladas. O Pylance segue
+o `pyrightconfig.json` do repositório, então o resultado no VS Code é o mesmo da
+linha de comando. As ferramentas de conferência estão em `requirements-dev.txt`:
 
 ```bash
-pip install -r requirements.txt
-pyright .        # 0 errors, 0 warnings
-ruff check .     # sem problemas (F, E9, B, UP)
+pip install -r requirements-dev.txt
+pyright .        # 0 errors, 0 warnings  (config em pyrightconfig.json)
+ruff check .     # sem problemas (F, E9, B, UP — config em ruff.toml)
 ```
+
+O Playwright (usado só por `shots.py`) também vem do `requirements-dev.txt`;
+depois rode `playwright install chromium`.
 
 Principais ajustes de tipagem: `tabela()` de `Campeonato` agora devolve
 `list[LinhaTabela]` (TypedDict) em vez de `list[dict]`; `_evento_gol()` e
