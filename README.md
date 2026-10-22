@@ -10,6 +10,7 @@ game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
 game/banco_dados.py  elencos a partir das fichas + API de consulta
 game/piramide.py     temporada com as 4 divisões + acesso e descenso
 game/divisao.py     regulamento de cada série: turno único, grupos, mata-mata
+game/copa.py        Copa do Brasil dentro da temporada (128 clubes, ida e volta)
 game/escudos.py      escudos de assets/escudos/ embutidos como data URI
 assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
 scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
@@ -96,9 +97,40 @@ final, 10 rodadas). Os 4 semifinalistas sobem para a Série C; não há descenso
 
 **Copa do Brasil (128 clubes)**
 
-Atalho em 🛠️ Criador → 🏆 **Copa do Brasil**: mata-mata em ida e volta da
-primeira fase até a final (sem jogo único), com os 128 clubes de melhor
-reputação das quatro divisões.
+A copa faz parte da temporada (`game/copa.py`): 128 clubes das quatro divisões,
+mata-mata em ida e volta da primeira fase até a final, sem jogo único.
+As datas vêm **depois** das rodadas dos regionais (8, 10, 12, … 34), então o
+clube joga a copa no meio da semana e o Brasileirão no fim de semana — as duas
+competições aparecem juntas em 📅 Calendário, 🏆 Classificações e 📊 Resultados.
+Empate no agregado vai para os pênaltis.
+
+O atalho 🛠️ Criador → 🏆 **Copa do Brasil** continua existindo para montar uma
+copa avulsa, fora da carreira.
+
+**Torneios regionais (12 clubes cada, 7 rodadas)**
+
+No começo da temporada abrem três torneios regionais (`game/regional.py`), com os
+12 clubes mais tradicionais de cada região:
+
+| Torneio | Estados |
+|---|---|
+| Rio-SP | RJ, SP |
+| Sul-Minas | RS, SC, PR, MG |
+| Copa do Nordeste | BA, PE, CE, RN, PB, AL, SE, PI, MA |
+
+1. Três grupos de 4 em turno único (3 rodadas).
+2. Classificam os 2 primeiros de cada grupo + os 2 melhores terceiros (8 clubes),
+   em mata-mata de jogo único: quartas (1×8, 2×7, 3×6, 4×5) e semifinal, sempre
+   na casa do melhor colocado; empate vai para os pênaltis.
+3. Final em ida e volta (agregado + pênaltis), com o pior campanha em casa no
+   primeiro jogo.
+
+**Supercopa do Brasil (jogo único)**
+
+Fecha a temporada (`Piramide`): campeão brasileiro (Série A) × campeão da Copa do
+Brasil, em jogo único na casa do campeão brasileiro. Se o mesmo clube ganhar as
+duas competições, o adversário é o vice da Copa. Empate vai para os pênaltis.
+É a última rodada do calendário (`total_rodadas_global`).
 
 ## Escudos
 
@@ -115,8 +147,10 @@ sem servidor de estáticos.
 | SVG genérico (duas cores + sigla) | 41 |
 
 Os 41 escudos genéricos são de clubes da Série D que não têm imagem pública
-indexada; foram desenhados por `scripts/gerar_escudos.py` (escudo em duas cores
-com a sigla), no estilo "escudo genérico" dos jogos de futebol.
+indexada; foram desenhados por `scripts/gerar_escudos.py` no estilo "escudo
+genérico" dos jogos de futebol: contorno de escudo, listras nas cores do clube,
+faixa clara com a sigla e um leve gradiente de volume — o mesmo desenho para
+todos, para não parecer imagem quebrada ao lado dos escudos oficiais.
 
 Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
 transparente). Para criar um clube novo sem imagem:
@@ -231,8 +265,11 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
 - Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
   `proximo_adversario()` devolve `"Folga"` nesses casos.
 - O calendário segue o regulamento de cada série: A/B têm 27 rodadas, C tem 19
-  e a D (96 clubes) tem 15. As quatro divisões correm juntas; quando a sua
-  termina, o botão "Simular o restante das outras divisões" fecha a temporada.
+  e a D (96 clubes) tem 15. As quatro divisões, os três regionais, a Copa do
+  Brasil e a Supercopa correm juntas (35 rodadas no total);
+  quando a sua divisão termina e você já saiu da copa, o botão "Simular o
+  restante da temporada" fecha o ano. Se a sua divisão acaba mas você continua
+  vivo na copa, o ⚽ Jogar Rodada passa a mostrar só os jogos da copa.
 - O acesso e o descenso são definidos pelo regulamento de cada série e aplicados
   ao fechar a temporada (`Piramide.aplicar_acesso_descenso`).
 - Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa
@@ -345,3 +382,10 @@ As fontes vêm do Google Fonts via `<link>`; se não carregarem, o CSS cai para
   vermelho, defesa).
 - Barras de energia em gradiente e selos de status (disponível / lesionado /
   suspenso).
+- Abas **🌎 Regionais** em Classificações e Resultados (tabelas dos grupos, chave
+  do mata-mata e jogos rodada a rodada) e cards dos campeões regionais, da
+  Supercopa e do acesso/descenso no fim da temporada.
+- Acabamento: rolagem horizontal nas tabelas largas, abas roláveis e paddings
+  menores em telas estreitas, microinterações em linhas de resultado e cartões
+  de clube (escudo ao lado do nome), foco visível no teclado e respeito a
+  `prefers-reduced-motion`.
