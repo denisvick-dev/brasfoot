@@ -9,6 +9,7 @@ game/modelos.py      Jogador, Time, Partida, Noticia
 game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
 game/banco_dados.py  elencos a partir das fichas + API de consulta
 game/piramide.py     temporada com as 4 divisões + acesso e descenso
+game/divisao.py     regulamento de cada série: turno único, grupos, mata-mata
 game/escudos.py      escudos de assets/escudos/ embutidos como data URI
 assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
 scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
@@ -28,7 +29,7 @@ streamlit run app.py      # interface do jogo
 
 python main.py            # Brasileirão com 20 clubes (Série A)
 python main.py 24         # 24 clubes
-python main.py 156        # banco inteiro, 4 divisões (~9s)
+python main.py 156        # banco inteiro, 4 divisões
 python main.py 20 7       # semente 7 (reproduzível)
 
 python diagnostico.py     # mede gols/jogo, empates, mando de campo etc.
@@ -65,6 +66,39 @@ resumo_banco()                           # contagem por divisão
 
 Na interface, o seletor **Divisão** da tela inicial define qual campeonato é
 disputado (Série A por padrão); o banco inteiro fica carregado em memória.
+
+## Regulamentos das divisões
+
+Cada série tem o seu formato (`game/divisao.py`), como no futebol brasileiro —
+a tela **🏆 Classificações** mostra as tabelas de cada fase e o 📖 Regulamento.
+
+**Séries A e B (20 clubes, 27 rodadas)**
+
+1. Primeira fase: turno único, todos contra todos (19 rodadas).
+2. Os 8 melhores passam para a segunda fase, em 2 grupos de 4
+   (1º, 4º, 5º e 8º num grupo; 2º, 3º, 6º e 7º no outro), turno e returno
+   (6 rodadas). Os dois primeiros de cada grupo avançam.
+3. Final em ida e volta entre os líderes dos grupos.
+4. **Série B:** os dois primeiros de cada grupo garantem o acesso
+   (4 vagas) — a final vale o título.
+5. Os 4 últimos da primeira fase caem para a série de baixo.
+
+**Série C (20 clubes, 19 rodadas)**
+
+Turno único; o líder é campeão e os 4 primeiros sobem para a Série B. Os 4
+últimos descem para a Série D.
+
+**Série D (96 clubes, 15 rodadas)**
+
+16 grupos de 6 em turno único (5 rodadas); os 2 melhores de cada grupo avançam
+para o mata-mata em ida e volta (16-avos → oitavas → quartas → semifinal →
+final, 10 rodadas). Os 4 semifinalistas sobem para a Série C; não há descenso.
+
+**Copa do Brasil (128 clubes)**
+
+Atalho em 🛠️ Criador → 🏆 **Copa do Brasil**: mata-mata em ida e volta da
+primeira fase até a final (sem jogo único), com os 128 clubes de melhor
+reputação das quatro divisões.
 
 ## Escudos
 
@@ -118,6 +152,7 @@ no jogo.
 | `app.py` | mata-mata checava `b is None` antes de `a is None` e estourava em confronto com BYE | ordem das checagens corrigida |
 | `app.py` | "Contratar" em Meus dados passava um jogador `None` para o elenco | checagem de `None` antes de contratar |
 | `criador.py` | `criar_clube()` anexava metadados dentro de `try/except: pass` | atribuição direta nos campos de `Time` |
+| `piramide.py` | temporada só em pontos corridos (38 ou 190 rodadas), sem acesso por fase | regulamento por série em `divisao.py` (turno único, grupos e mata-mata) |
 | `app.py` (CSS) | regra global `span { font-family: … !important }` vencia a fonte dos ícones nativos do Streamlit: o nome da ligadura aparecia como texto (`keyboard_double_arrow_left` no botão de recolher a sidebar) | regra específica para `[data-testid="stIconMaterial"]` devolvendo `Material Symbols Rounded` (+ fonte de emoji para `stIconEmoji`) |
 
 ### Tipos / Pylance
@@ -195,9 +230,11 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
 
 - Com número ímpar de clubes o round-robin usa **BYE** (rodada de folga) e
   `proximo_adversario()` devolve `"Folga"` nesses casos.
-- O calendário é sempre turno e returno: Série A/B/C têm 38 rodadas e a Série D
-  (96 clubes) tem 190. As quatro divisões correm juntas; quando a sua termina,
-  o botão "Simular o restante das outras divisões" fecha a temporada.
+- O calendário segue o regulamento de cada série: A/B têm 27 rodadas, C tem 19
+  e a D (96 clubes) tem 15. As quatro divisões correm juntas; quando a sua
+  termina, o botão "Simular o restante das outras divisões" fecha a temporada.
+- O acesso e o descenso são definidos pelo regulamento de cada série e aplicados
+  ao fechar a temporada (`Piramide.aplicar_acesso_descenso`).
 - Numa temporada longa, 3 ou 4 clubes pequenos podem terminar com caixa
   negativo; é o comportamento esperado da régua econômica atual.
 - `is_player_home` / `is_player_away` continuam sem uso dentro de `simular()` —

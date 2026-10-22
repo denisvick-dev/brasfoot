@@ -40,6 +40,7 @@ DISTRIBUICOES = {
 }
 
 NOMES_MATA = {
+    128: "Primeira fase",
     2: "Final",
     4: "Semifinal",
     8: "Quartas de final",

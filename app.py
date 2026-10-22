@@ -44,6 +44,7 @@ from game.criador import (
     salvar_clube,
     salvar_jogador,
 )
+from game.divisao import Fase as FaseDivisao
 from game.escudos import imagem as escudo_img
 from game.liga import League
 from game.mercado import Market
@@ -739,34 +740,63 @@ def zona_da_posicao(divisao: str, pos: int, total: int) -> tuple[str, str]:
     return "#CBD5E1", "Meio de tabela"
 
 
-def tabela_classificacao(
-    divisao: str, time: Time | None = None, com_zona: bool = True
+def linhas_classificacao(divisao: str, fase_idx: int = 0, grupo: str | None = None) -> list[dict]:
+    """Linhas (com estatísticas da fase) da classificação de uma divisão."""
+    piramide = get_piramide()
+    if piramide is not None and divisao in piramide.divisoes:
+        return piramide.tabela(divisao, fase_idx, grupo)
+    league = st.session_state.get("league")
+    if league is None:
+        return []
+    return [
+        {
+            "time": t,
+            "pts": t.pontos,
+            "j": t.jogos_campeonato,
+            "v": t.vitorias,
+            "e": t.empates,
+            "d": t.derrotas,
+            "gp": t.gols_pro,
+            "gc": t.gols_contra,
+            "sg": t.saldo_gols,
+        }
+        for t in league.classificacao
+    ]
+
+
+def tabela_html(
+    linhas: list[dict],
+    time: Time | None = None,
+    divisao: str = "A",
+    com_zona: bool = True,
 ) -> str:
-    """HTML da tabela de classificação completa de uma divisão."""
-    classif = classificacao_de(divisao)
-    total = len(classif)
-    linhas = []
-    for i, clube in enumerate(classif):
+    """HTML de uma tabela de classificação a partir das linhas da fase."""
+    total = len(linhas)
+    html = []
+    for i, linha in enumerate(linhas):
         pos = i + 1
-        zona, zona_txt = zona_da_posicao(divisao, pos, total) if com_zona else ("#CBD5E1", "")
+        clube: Time = linha["time"]
+        zona, zona_txt = (
+            zona_da_posicao(divisao, pos, total) if com_zona else ("#CBD5E1", "")
+        )
         me = "me" if time is not None and clube.nome == time.nome else ""
-        sg = clube.saldo_gols
+        sg = linha["sg"]
         sg_html = (
             f'<span class="pill {"p-ok" if sg > 0 else "p-bad" if sg < 0 else "p-info"}">'
             f"{sg:+d}</span>"
         )
-        linhas.append(
+        html.append(
             f"<tr class='{me}' title='{zona_txt}'>"
             f"<td class='num'><b>{pos}º</b></td>"
             f"<td class='num'><span class='zona' style='background:{zona}'></span></td>"
             f"<td>{escudo_img(clube.sigla, clube.escudo_emoji)} {clube.nome}</td>"
-            f"<td class='num'><b>{clube.pontos}</b></td>"
-            f"<td class='num'>{clube.jogos_campeonato}</td>"
-            f"<td class='num'>{clube.vitorias}</td>"
-            f"<td class='num'>{clube.empates}</td>"
-            f"<td class='num'>{clube.derrotas}</td>"
-            f"<td class='num'>{clube.gols_pro}</td>"
-            f"<td class='num'>{clube.gols_contra}</td>"
+            f"<td class='num'><b>{linha['pts']}</b></td>"
+            f"<td class='num'>{linha['j']}</td>"
+            f"<td class='num'>{linha['v']}</td>"
+            f"<td class='num'>{linha['e']}</td>"
+            f"<td class='num'>{linha['d']}</td>"
+            f"<td class='num'>{linha['gp']}</td>"
+            f"<td class='num'>{linha['gc']}</td>"
             f"<td class='num'>{sg_html}</td>"
             f"<td class='num'>{badge_overall(clube.overall_time)}</td>"
             "</tr>"
@@ -777,7 +807,16 @@ def tabela_classificacao(
         "<th class='num'>Pts</th><th class='num'>J</th><th class='num'>V</th>"
         "<th class='num'>E</th><th class='num'>D</th><th class='num'>GP</th>"
         "<th class='num'>GC</th><th class='num'>SG</th><th class='num'>OVR</th>"
-        "</tr></thead><tbody>" + "".join(linhas) + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(html) + "</tbody></table>"
+    )
+
+
+def tabela_classificacao(
+    divisao: str, time: Time | None = None, com_zona: bool = True
+) -> str:
+    """HTML da classificação da primeira fase de uma divisão."""
+    return tabela_html(
+        linhas_classificacao(divisao), time=time, divisao=divisao, com_zona=com_zona
     )
 
 
@@ -1581,10 +1620,14 @@ def _linha_do_tempo(eventos: list[str]):
 
 def _tela_fim_temporada(time: Time, league: League):
     piramide = get_piramide()
-    campeao = league.classificacao[0]
-    pos = posicao_na_tabela(league, time.nome)
-    n = len(league.classificacao)
     minha = divisao_do_jogador()
+    campeao = (
+        piramide.league(minha).campeao
+        if piramide is not None
+        else league.classificacao[0]
+    )
+    campeao = campeao or league.classificacao[0]
+    pos = posicao_na_tabela(league, time.nome)
     outras_pendentes = (
         [d for d in piramide.ordem if not piramide.encerrada_em(d)]
         if piramide is not None
@@ -1605,15 +1648,27 @@ def _tela_fim_temporada(time: Time, league: League):
         unsafe_allow_html=True,
     )
 
-    if pos == 1:
+    if piramide is not None and campeao is not None and campeao.nome == time.nome:
         st.balloons()
         st.success("🎉🏆 PARABÉNS! VOCÊ É O CAMPEÃO! 🏆🎉")
-    elif pos <= 4:
-        st.success(f"✅ Acesso/Libertadores garantido! ({pos}º lugar)")
-    elif pos <= 6 and minha == "A":
-        st.info(f"Classificado para a Sul-Americana ({pos}º lugar)")
-    elif pos >= n - 3:
-        st.error(f"😢 Rebaixado! ({pos}º lugar)")
+    else:
+        temporada_div = piramide.league(minha) if piramide is not None else None
+        if temporada_div is not None and any(
+            t.nome == time.nome for t in temporada_div.promovidos
+        ):
+            st.success(f"✅ Acesso garantido! ({pos}º na 1ª fase)")
+        elif temporada_div is not None and any(
+            t.nome == time.nome for t in temporada_div.rebaixados
+        ):
+            st.error(f"😢 Rebaixado! ({pos}º na 1ª fase)")
+        elif pos <= 6 and minha == "A":
+            st.info(f"Classificado para a Sul-Americana ({pos}º lugar)")
+        elif pos == 1 and temporada_div is not None:
+            st.success(f"✅ Melhor campanha da 1ª fase! ({pos}º lugar)")
+
+    secao("Regulamento", NOMES_DIVISAO.get(minha, minha))
+    for regra in (piramide.regulamento(minha) if piramide is not None else []):
+        st.markdown(f"- {regra}")
 
     secao("Classificação final", NOMES_DIVISAO.get(minha, minha))
     st.markdown(tabela_classificacao(minha, time), unsafe_allow_html=True)
@@ -1650,18 +1705,22 @@ def _tela_fim_temporada(time: Time, league: League):
     secao("Temporada completa", f"{len(piramide.ordem)} divisões")
     colunas = st.columns(min(4, len(piramide.ordem)))
     for i, divisao in enumerate(piramide.ordem):
-        tabela = piramide.classificacao(divisao)
+        temporada_div = piramide.league(divisao)
+        tabela = temporada_div.tabela(temporada_div.fases[0])
         if not tabela:
             continue
         with colunas[i % len(colunas)]:
             encerrada = piramide.encerrada_em(divisao)
+            destaque = (
+                temporada_div.campeao if encerrada else tabela[0]["time"]
+            ) or tabela[0]["time"]
             st.markdown(
                 f'<div class="stat" style="--accent:#F5B301">'
                 f'<div class="lbl">{NOMES_DIVISAO.get(divisao, divisao)}</div>'
                 f'<div class="val" style="font-size:1.05rem;font-family:var(--font-ui)!important">'
-                f"{escudo_img(tabela[0].sigla, tabela[0].escudo_emoji)} {tabela[0].nome}</div>"
+                f"{escudo_img(destaque.sigla, destaque.escudo_emoji)} {destaque.nome}</div>"
                 f'<div class="club-meta">{"campeão" if encerrada else "líder"} · '
-                f"{tabela[0].pontos} pts · rodada {piramide.rodada(divisao)}/"
+                f"{tabela[0]['pts']} pts · rodada {piramide.rodada(divisao)}/"
                 f"{piramide.total_rodadas(divisao)}</div></div>",
                 unsafe_allow_html=True,
             )
@@ -1700,6 +1759,71 @@ def _tela_fim_temporada(time: Time, league: League):
 # ============================================================
 # CLASSIFICAÇÃO
 # ============================================================
+def _fases_da_divisao(divisao: str) -> list[tuple[str, FaseDivisao]]:
+    """(nome, fase) das fases já criadas na temporada de uma divisão."""
+    piramide = get_piramide()
+    if piramide is None or divisao not in piramide.divisoes:
+        return []
+    temporada = piramide.league(divisao)
+    return [(f.nome, f) for f in temporada.fases]
+
+
+def _resultado_mata(divisao: str, fase: FaseDivisao) -> str:
+    """Resumo em HTML dos confrontos de uma fase eliminatória."""
+    piramide = get_piramide()
+    linhas = []
+    for casa, fora in getattr(fase, "pares", []):
+        gols_casa = gols_fora = 0
+        for i, (c, f) in enumerate([(casa, fora), (fora, casa)][: fase.total_rodadas]):
+            partida = (
+                piramide.partida(divisao, _rodada_global(divisao, fase, i + 1), c, f)
+                if piramide
+                else None
+            )
+            if partida is None:
+                continue
+            if partida.time_casa == casa:
+                gols_casa += partida.gols_casa
+                gols_fora += partida.gols_fora
+            else:
+                gols_casa += partida.gols_fora
+                gols_fora += partida.gols_casa
+        vencedores = {t.nome for t in fase.vencedores}
+        cls_c = "v" if casa in vencedores else ("d" if vencedores else "")
+        cls_f = "v" if fora in vencedores else ("d" if vencedores else "")
+        linhas.append(
+            f'<div class="res"><span class="tag {cls_c}">{_sigla(divisao, casa)}</span>'
+            f"<span>{casa}</span>"
+            f"<span style='margin-left:auto'><b>{gols_casa} x {gols_fora}</b></span>"
+            f"<span>{fora}</span>"
+            f'<span class="tag {cls_f}">{_sigla(divisao, fora)}</span></div>'
+        )
+    return "".join(linhas)
+
+
+def _sigla(divisao: str, nome: str) -> str:
+    piramide = get_piramide()
+    if piramide is not None and divisao in piramide.divisoes:
+        for time in piramide.league(divisao).times:
+            if time.nome == nome:
+                return time.sigla
+    return nome[:3].upper()
+
+
+def _rodada_global(divisao: str, fase: FaseDivisao, rodada_da_fase: int) -> int:
+    """Converte a rodada dentro da fase para a rodada global da temporada."""
+    piramide = get_piramide()
+    if piramide is None or divisao not in piramide.divisoes:
+        return rodada_da_fase
+    temporada = piramide.league(divisao)
+    base = 0
+    for outra in temporada.fases:
+        if outra is fase:
+            return base + rodada_da_fase
+        base += outra.total_rodadas
+    return base + rodada_da_fase
+
+
 def tela_classificacao():
     time = get_meu_time()
     league = st.session_state.league
@@ -1725,29 +1849,89 @@ def tela_classificacao():
 
     for aba, divisao in zip(abas, divisoes):
         with aba:
-            classif = classificacao_de(divisao)
-            rodada, total = rodada_de(divisao), total_rodadas_de(divisao)
-            situacao = "encerrada" if total and rodada >= total else f"rodada {rodada}/{total}"
+            temporada = (
+                piramide_atual.league(divisao)
+                if piramide_atual is not None and divisao in piramide_atual.divisoes
+                else None
+            )
+            situacao = (
+                f"rodada {rodada_de(divisao)}/{total_rodadas_de(divisao)}"
+                if rodada_de(divisao) < total_rodadas_de(divisao)
+                else "encerrada"
+            )
             st.markdown(
                 f'<div class="club-meta">🏁 {NOMES_DIVISAO.get(divisao, divisao)} · '
-                f"{len(classif)} clubes · {situacao}</div>",
+                f"{len(classificacao_de(divisao))} clubes · {situacao}"
+                + (
+                    f" · fase atual: {temporada.fase_atual.nome}"
+                    if temporada is not None
+                    else ""
+                )
+                + "</div>",
                 unsafe_allow_html=True,
             )
-            if not classif:
-                st.info("Essa divisão não tem clubes suficientes nesta temporada.")
-                continue
-            st.markdown(
-                tabela_classificacao(divisao, time), unsafe_allow_html=True
-            )
-            st.markdown(legenda_zonas(divisao), unsafe_allow_html=True)
-            if time is not None and divisao == divisao_do_jogador():
-                pos = next(
-                    (i + 1 for i, t in enumerate(classif) if t.nome == time.nome), 0
+
+            fases = _fases_da_divisao(divisao)
+            if not fases:
+                # modo antigo (sem pirâmide): tabela única
+                st.markdown(
+                    tabela_classificacao(divisao, time), unsafe_allow_html=True
                 )
-                if pos:
-                    st.caption(
-                        f"Seu time: **{pos}º** com {time.pontos} pontos "
-                        f"({time.vitorias}V {time.empates}E {time.derrotas}D)"
+                st.markdown(legenda_zonas(divisao), unsafe_allow_html=True)
+                continue
+
+            for i, (nome_fase, fase) in enumerate(fases):
+                if fase.tipo == "mata":
+                    secao(nome_fase, f"{len(fase.pares)} confrontos")
+                    st.markdown(
+                        _resultado_mata(divisao, fase), unsafe_allow_html=True
+                    )
+                    continue
+
+                if fase.tipo == "pontos":
+                    titulo = "1ª fase · turno único"
+                else:
+                    titulo = nome_fase
+                secao(titulo, f"rodada {fase.rodada_atual}/{fase.total_rodadas}")
+                grupos = sorted(fase.grupos) if len(fase.grupos) > 1 else ["Geral"]
+                if len(grupos) == 1:
+                    st.markdown(
+                        tabela_html(
+                            temporada.tabela(fase) if temporada else linhas_classificacao(divisao),
+                            time=time,
+                            divisao=divisao,
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    colunas = st.columns(min(4, len(grupos)))
+                    for j, letra in enumerate(grupos):
+                        with colunas[j % len(colunas)]:
+                            st.markdown(
+                                f"<div class='sec-title' style='font-size:.95rem'>"
+                                f"Grupo {letra}</div>",
+                                unsafe_allow_html=True,
+                            )
+                            st.markdown(
+                                tabela_html(
+                                    temporada.tabela(fase, letra) if temporada else [],
+                                    time=time,
+                                    divisao=divisao,
+                                    com_zona=len(grupos) <= 4,
+                                ),
+                                unsafe_allow_html=True,
+                            )
+                if i == 0:
+                    st.markdown(legenda_zonas(divisao), unsafe_allow_html=True)
+
+            # regulamento da divisão
+            regras = (
+                piramide_atual.regulamento(divisao) if piramide_atual is not None else []
+            )
+            if regras:
+                with st.expander("📖 Regulamento da divisão"):
+                    st.markdown(
+                        "".join(f"- {regra}\n" for regra in regras)
                     )
 
     with abas[-1]:
@@ -1959,6 +2143,51 @@ def tela_mercado():
 # ============================================================
 # CRIADOR — clubes, jogadores e campeonatos
 # ============================================================
+def _clubes_da_copa_do_brasil(
+    banco: list[str], custom: list[str], total: int = 128
+) -> list[Time]:
+    """128 clubes para a Copa do Brasil: todas as divisões, por reputação."""
+    piramide = get_piramide()
+    times = list(piramide.times) if piramide is not None else []
+    if not times:
+        times = list(st.session_state.get("times") or [])
+    if not times:
+        times = resolver_times((custom + banco)[:total])
+    ordenados = sorted(times, key=lambda t: (-t.reputacao, -t.torcida, t.nome))
+    return ordenados[:total]
+
+
+def _criar_copa_do_brasil(
+    banco: list[str],
+    custom: list[str],
+    temporada: int,
+    usar_semente: bool,
+    semente: int,
+) -> None:
+    """Monta a Copa do Brasil (128 clubes, mata-mata em ida e volta)."""
+    selecionados = _clubes_da_copa_do_brasil(banco, custom)
+    if len(selecionados) < 4:
+        st.session_state["erro_copa"] = "não há clubes suficientes para o mata-mata"
+        return
+    try:
+        camp = Campeonato(
+            nome="Copa do Brasil",
+            times=resolver_times([t.nome for t in selecionados]),
+            formato="copa",
+            temporada=temporada,
+            ida_e_volta=True,
+            ida_e_volta_mata=True,
+            final_unica=False,
+            distribuicao="forca",
+            semente=semente if usar_semente else None,
+        )
+        camp.salvar()
+    except Exception as erro:  # noqa: BLE001
+        st.session_state["erro_copa"] = str(erro)
+        return
+    st.session_state.competicao = camp
+
+
 def _previa_campeonato(
     *,
     formato: str,
@@ -2338,6 +2567,30 @@ def tela_criador():
                 42,
                 disabled=not usar_semente,
             )
+
+        # ---- competições prontas ----
+        secao("Competições prontas", "Atalho")
+        col_p1, col_p2 = st.columns([1, 3])
+        with col_p1:
+            criar_copa = st.button(
+                "🏆 Copa do Brasil", type="primary", use_container_width=True
+            )
+        with col_p2:
+            st.caption(
+                "128 clubes · mata-mata em ida e volta da primeira fase até a "
+                "final, sem jogo único · As quatro divisões entram e as vagas "
+                "que sobram ficam com os clubes de melhor reputação."
+            )
+        if criar_copa:
+            _criar_copa_do_brasil(
+                banco, custom, int(temporada_c), usar_semente, int(semente)
+            )
+            if st.session_state.get("erro_copa"):
+                st.error(f"❌ Copa do Brasil: {st.session_state.pop('erro_copa')}")
+            else:
+                st.session_state.pagina = "competicao"
+                st.rerun()
+
 
         # ---------------- regras por formato ----------------
         promovidos = rebaixados = 0
