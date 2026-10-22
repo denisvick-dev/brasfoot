@@ -620,7 +620,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Maracanaú", 8_000, 2001, "IGU",
     ),
     Clube(
-        "Marcílio Dias", "MDI", "Itajaí", "SC", "🔴⚪", "#C62828", "#FFFFFF",
+        "Marcílio Dias", "MDI", "Itajaí", "SC", "🔵🔴", "#17337E", "#C8102E",
         28, 48, 600_000, 4, 40,
         "D", "Hercílio Luz", 8_000, 1919, "BLU",
     ),
@@ -820,12 +820,12 @@ TIMES_DATA: list[Clube] = [
         "D", "Parque do Sabiá", 45_000, 1949, "TOM",
     ),
     Clube(
-        "União Rondonópolis", "UNI", "Rondonópolis", "MT", "🔵⚪", "#1565C0", "#FFFFFF",
+        "União Rondonópolis", "UNI", "Rondonópolis", "MT", "🔴⚪", "#C8102E", "#FFFFFF",
         28, 48, 700_000, 4, 42,
         "D", "Caldeirão", 19_000, 1957, "LUV",
     ),
     Clube(
-        "Velo Clube", "VEL", "Rio Claro", "SP", "🔴⚫", "#C62828", "#212121",
+        "Velo Clube", "VEL", "Rio Claro", "SP", "🟢🔴", "#0E7A3F", "#C8102E",
         28, 48, 700_000, 4, 42,
         "D", "Benitão", 8_000, 1910, "NOR",
     ),

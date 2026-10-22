@@ -142,11 +142,11 @@ sem servidor de estáticos.
 
 | Origem | Clubes |
 |---|---|
-| PNG oficial | 118 |
+| PNG oficial | 124 |
 | SVG importado (Séries A/B) | 4 |
-| SVG genérico (cores do clube + sigla) | 34 |
+| SVG genérico (cores do clube + sigla) | 28 |
 
-Os 34 escudos genéricos são de clubes da Série D que não têm imagem pública
+Os 28 escudos genéricos são de clubes da Série D que não têm imagem pública
 indexada; foram desenhados por `scripts/gerar_escudos.py` no estilo "escudo
 genérico" dos jogos de futebol: contorno de escudo, listras nas cores do clube,
 faixa clara com a sigla e um leve gradiente de volume — o mesmo desenho para
