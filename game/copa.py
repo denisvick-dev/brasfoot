@@ -85,6 +85,7 @@ class CopaBrasil:
         rodadas_temporada: int = 27,
         max_clubes: int = 128,
         semente: int | None = None,
+        deslocamento: int = 0,
     ):
         if len(times) < 4:
             raise ValueError("A Copa do Brasil precisa de ao menos 4 clubes.")
@@ -93,6 +94,7 @@ class CopaBrasil:
         self.rng = random.Random(semente)
         self.noticias: list[Noticia] = []
         self.campeao: Time | None = None
+        self.vice: Time | None = None
         self._resultados: dict[int, list[Partida]] = {}
 
         n = min(len(times), max_clubes)
@@ -107,7 +109,9 @@ class CopaBrasil:
         fortes = ordenados[:metade]
         fracos = list(reversed(ordenados[metade:]))
         n_fases = max(1, n.bit_length() - 1)
-        self.datas = _datas_da_copa(rodadas_temporada, 2 * n_fases)
+        self.datas = [
+            deslocamento + d for d in _datas_da_copa(rodadas_temporada, 2 * n_fases)
+        ]
         self.fases: list[FaseCopa] = [self._primeira_fase(fortes, fracos)]
 
     # ---- montagem ---------------------------------------------------
@@ -258,6 +262,8 @@ class CopaBrasil:
             else:
                 vencedor = a if gols_a > gols_b else b
             vencedores.append(vencedor)
+            if len(fase.pares) == 1:
+                self.vice = b if vencedor is a else a
         fase.vencedores = vencedores
 
     def _penaltis(self, a: Time, b: Time) -> Time:

@@ -26,8 +26,8 @@ DIRETORIO = RAIZ / "assets" / "escudos"
 
 # contorno clássico de escudo (viewBox 0 0 100 120)
 ESCUDO = "M8 4 H92 V62 C92 90 74 108 50 117 C26 108 8 90 8 62 Z"
-METADE = "M50 4 H92 V62 C92 90 74 108 50 117 Z"  # metade direita (2ª cor)
-FAIXA_Y, FAIXA_H = 52, 30  # faixa escura onde a sigla fica legível
+FAIXA_Y, FAIXA_H = 46, 34  # faixa clara onde a sigla fica legível
+LISTRAS = ((16, 12), (44, 12), (72, 12))  # (x, largura) das listras da 2ª cor
 
 
 def _luminancia(cor: str) -> float:
@@ -39,30 +39,63 @@ def _luminancia(cor: str) -> float:
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+def _contraste(cor: str) -> str:
+    """Cor de texto legível (#12181A ou #FFFFFF) sobre ``cor``."""
+    return "#12181A" if _luminancia(cor) > 0.45 else "#FFFFFF"
+
+
 def svg_generico(clube: Clube) -> str:
-    """Escudo genérico do clube em SVG (duas cores + faixa com a sigla)."""
+    """Escudo genérico do clube em SVG: listras nas cores do clube, faixa
+    central clara com a sigla e acabamento com brilho/sombra discretos.
+
+    O desenho é propositalmente sóbrio — é o mesmo formato para todos os
+    clubes que ainda não têm escudo oficial, então ele precisa parecer
+    intencional ao lado dos escudos reais, e não um "quebrado-galho".
+    """
     cor1, cor2 = clube.cor1, clube.cor2
     if cor1.lower() == cor2.lower():
         cor2 = "#FFFFFF" if _luminancia(cor1) < 0.5 else "#212121"
     sigla = escape(clube.sigla[:4])
-    # a sigla precisa caber na parte do escudo que estreita: diminui com o tamanho
-    tamanho = {2: 34, 3: 28, 4: 22}.get(len(clube.sigla), 20)
+    # a sigla precisa caber na faixa: diminui com o tamanho
+    tamanho = {2: 30, 3: 26, 4: 21}.get(len(clube.sigla), 20)
     fonte = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    texto = "#12181A"  # a faixa é clara
+    listras = "".join(
+        f'<rect x="{x}" y="0" width="{w}" height="120" fill="{cor2}"/>'
+        for x, w in LISTRAS
+    )
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" '
         f'width="100" height="120" role="img" data-generico="1" '
         f'aria-label="Escudo do {escape(clube.nome)}">'
         f"<title>{escape(clube.nome)}</title>"
+        "<defs>"
         f'<clipPath id="escudo"><path d="{ESCUDO}"/></clipPath>'
-        f'<g clip-path="url(#escudo)">'
+        '<linearGradient id="volume" x1="0" y1="0" x2="0" y2="1">'
+        '<stop offset="0" stop-color="#FFFFFF" stop-opacity=".18"/>'
+        '<stop offset=".55" stop-color="#FFFFFF" stop-opacity="0"/>'
+        '<stop offset="1" stop-color="#000000" stop-opacity=".16"/>'
+        "</linearGradient>"
+        "</defs>"
+        '<g clip-path="url(#escudo)">'
         f'<path d="{ESCUDO}" fill="{cor1}"/>'
-        f'<path d="{METADE}" fill="{cor2}"/>'
-        f'<rect x="0" y="{FAIXA_Y}" width="100" height="{FAIXA_H}" fill="#1A1A1A" fill-opacity=".62"/>'
-        f'<text x="50" y="{FAIXA_Y + FAIXA_H // 2 + tamanho // 3}" text-anchor="middle"'
-        f' font-family="{fonte}" font-size="{tamanho}" font-weight="700" letter-spacing="0.5"'
-        f' fill="#FFFFFF">{sigla}</text>'
+        f"{listras}"
+        f'<rect x="0" y="{FAIXA_Y}" width="100" height="{FAIXA_H}" '
+        'fill="#F8FAF9" fill-opacity=".94"/>'
+        f'<rect x="0" y="{FAIXA_Y}" width="100" height="2" fill="{cor1}" '
+        'fill-opacity=".55"/>'
+        f'<rect x="0" y="{FAIXA_Y + FAIXA_H - 2}" width="100" height="2" '
+        f'fill="{cor1}" fill-opacity=".55"/>'
+        '<rect x="0" y="0" width="100" height="120" fill="url(#volume)"/>'
+        f'<text x="50" y="{FAIXA_Y + FAIXA_H // 2 + tamanho // 3}" '
+        'text-anchor="middle" '
+        f'font-family="{fonte}" font-size="{tamanho}" font-weight="800" '
+        f'letter-spacing="0.6" fill="{texto}">{sigla}</text>'
         "</g>"
-        f'<path d="{ESCUDO}" fill="none" stroke="#212121" stroke-opacity=".5" stroke-width="3"/>'
+        f'<path d="{ESCUDO}" fill="none" stroke="#0B1220" stroke-opacity=".38" '
+        'stroke-width="3"/>'
+        f'<path d="{ESCUDO}" fill="none" stroke="#FFFFFF" stroke-opacity=".55" '
+        'stroke-width="1.2"/>'
         "</svg>\n"
     )
 
