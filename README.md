@@ -152,16 +152,16 @@ orfaos()     # [] → todo arquivo corresponde a um clube
 
 | Origem | Clubes |
 |---|---|
-| PNG oficial | 153 |
-| SVG genérico (cores do clube + sigla) | 3 |
+| PNG oficial | 156 |
+| SVG genérico (cores do clube + sigla) | 0 |
 
-Restam três escudos genéricos — **Brasil de Pelotas (BRS)**, **Luverdense
-(LUV)** e **Sampaio Corrêa (SAM)** — desenhados por `scripts/gerar_escudos.py`
-no estilo "escudo genérico" dos jogos de futebol: contorno de escudo, listras
-nas cores do clube, faixa clara com a sigla e um leve gradiente de volume, para
-não parecer imagem quebrada ao lado dos escudos oficiais. À medida que um escudo
-real é adicionado (`assets/escudos/<SIGLA>.png`), o PNG tem precedência e o SVG
-genérico daquele clube pode ser apagado.
+Todos os 156 clubes do banco têm escudo oficial em PNG — nenhum sobrou no
+desenho genérico. O `scripts/gerar_escudos.py` continua no projeto para clubes
+criados pelo jogador ou para times novos que ainda não tenham imagem: ele
+desenha o SVG genérico (contorno de escudo, listras nas cores do clube, faixa
+clara com a sigla e um leve gradiente de volume). Se um escudo real for
+adicionado depois (`assets/escudos/<SIGLA>.png`), o PNG tem precedência e o SVG
+genérico pode ser apagado.
 
 Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
 transparente). Para criar um clube novo sem imagem:

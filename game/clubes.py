@@ -435,7 +435,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Blumenau", 8_000, 2020, "MDI",
     ),
     Clube(
-        "Brasil de Pelotas", "BRS", "Pelotas", "RS", "🟡⚫", "#F9A825", "#212121",
+        "Brasil de Pelotas", "BRS", "Pelotas", "RS", "🔴⚫", "#C62828", "#212121",
         32, 54, 1_500_000, 8, 46,
         "D", "Bento Freitas", 18_000, 1911, "JUV",
     ),
