@@ -34,6 +34,11 @@ FORMATOS = {
     "grupos_mata": "Grupos + eliminatórias",
 }
 
+DISTRIBUICOES = {
+    "sorteio": "Sorteio (aleatório)",
+    "forca": "Por força (cabeças de chave)",
+}
+
 NOMES_MATA = {
     2: "Final",
     4: "Semifinal",
@@ -143,6 +148,49 @@ def _nome_fase_mata(n_times: int) -> str:
     return NOMES_MATA.get(n_times, f"Fase de {n_times}")
 
 
+def _posicoes_bracket(size: int) -> list[int]:
+    """
+    Ordem clássica dos cabeças de chave numa chave de ``size`` (potência de 2).
+
+    Para 8 times: ``[1, 8, 4, 5, 2, 7, 3, 6]`` — assim o 1º só cruza com o 8º,
+    o 2º com o 7º e os favoritos se encontram o mais tarde possível.
+    """
+    ordem = [1]
+    while len(ordem) < size:
+        n = len(ordem) * 2
+        novo: list[int] = []
+        for seed in ordem:
+            novo.extend([seed, n + 1 - seed])
+        ordem = novo
+    return ordem
+
+
+def _sorteio_com_byes(
+    times: list[Time], size: int, rng: random.Random
+) -> list[Time | None]:
+    """Sorteia os confrontos garantindo no máximo um BYE por jogo da 1ª fase."""
+    restantes = list(times)
+    rng.shuffle(restantes)
+    confrontos: list[list[Time | None]] = [[None, None] for _ in range(size // 2)]
+    for confronto in confrontos:  # primeiro um time em cada confronto
+        if restantes:
+            confronto[0] = restantes.pop()
+    for confronto in confrontos:  # depois o segundo (quem sobrar)
+        if restantes:
+            confronto[1] = restantes.pop()
+    return [time for confronto in confrontos for time in confronto]
+
+
+def limites(n_times: int) -> dict[str, int]:
+    """Limites válidos das opções do criador, para um campeonato de ``n_times``."""
+    return {
+        "grupos": max(2, min(n_times // 2, len(LETRAS_GRUPOS))),
+        "classificados_por_grupo": max(1, n_times // 4),
+        "times_por_grupo": max(2, n_times // 2),
+        "promovidos": max(0, n_times // 2),
+    }
+
+
 # ============================================================
 # Campeonato
 # ============================================================
@@ -162,6 +210,10 @@ class Campeonato:
         rebaixados: int = 0,
         final_unica: bool = True,
         semente: int | None = None,
+        ida_e_volta_mata: bool | None = None,
+        times_por_grupo: int | None = None,
+        distribuicao: str = "sorteio",
+        terceiro_lugar: bool = False,
     ):
         if not nome:
             raise ValueError("O campeonato precisa de um nome.")
@@ -169,14 +221,28 @@ class Campeonato:
             raise ValueError("É preciso de ao menos 2 times.")
         if formato not in FORMATOS:
             raise ValueError(f"Formato inválido: {formato!r}. Use um de {list(FORMATOS)}.")
+        if distribuicao not in DISTRIBUICOES:
+            raise ValueError(
+                f"Distribuição inválida: {distribuicao!r}. "
+                f"Use uma de {list(DISTRIBUICOES)}."
+            )
 
         self.nome = nome
         self.times = list(times)
         self.formato = formato
         self.temporada = temporada
+        # ``ida_e_volta`` vale para as duas fases; cada uma pode ter a sua regra
         self.ida_e_volta = ida_e_volta
+        self.ida_e_volta_grupos = ida_e_volta
+        self.ida_e_volta_mata = (
+            ida_e_volta if ida_e_volta_mata is None else ida_e_volta_mata
+        )
         self.n_grupos = n_grupos
+        self.times_por_grupo = times_por_grupo or None
         self.classificados_por_grupo = classificados_por_grupo
+        self.distribuicao = distribuicao
+        self.terceiro_lugar = terceiro_lugar
+        self.terceiro: Confronto | None = None
         self.promovidos = promovidos
         self.rebaixados = rebaixados
         self.final_unica = final_unica
@@ -232,7 +298,7 @@ class Campeonato:
 
     def _montar_pontos_corridos(self):
         nomes = [t.nome for t in self.times]
-        rodadas = _round_robin(nomes, ida_e_volta=self.ida_e_volta)
+        rodadas = _round_robin(nomes, ida_e_volta=self.ida_e_volta_grupos)
         fase = Fase(
             nome="Pontos corridos",
             tipo="grupos",
@@ -241,7 +307,7 @@ class Campeonato:
                 [("Geral", casa, fora) for casa, fora in jogos] for jogos in rodadas
             ],
             classificados=0,
-            ida_e_volta=self.ida_e_volta,
+            ida_e_volta=self.ida_e_volta_grupos,
         )
         self.fases = [fase]
 
@@ -259,14 +325,20 @@ class Campeonato:
             )
             restantes //= 2
         for fase in fases[:-1]:
-            fase.ida_e_volta = self.ida_e_volta
-        fases[-1].ida_e_volta = not self.final_unica
+            fase.ida_e_volta = self.ida_e_volta_mata
+        fases[-1].ida_e_volta = self.ida_e_volta_mata and not self.final_unica
         return fases
 
     def _montar_copa(self):
         size = _proxima_potencia_de_dois(len(self.times))
-        participantes = list(self.times) + [None] * (size - len(self.times))
-        self.rng.shuffle(participantes)
+        if self.distribuicao == "forca":
+            ordenados = sorted(self.times, key=lambda t: (-t.overall_time, t.nome))
+            participantes: list[Time | None] = [
+                ordenados[pos - 1] if pos <= len(ordenados) else None
+                for pos in _posicoes_bracket(size)
+            ]
+        else:
+            participantes = _sorteio_com_byes(self.times, size, self.rng)
 
         self.fases = self._fases_mata(size)
         for i, confronto in enumerate(self.fases[0].confrontos):
@@ -275,30 +347,48 @@ class Campeonato:
 
     def _montar_grupos_mata(self):
         times = list(self.times)
-        self.rng.shuffle(times)
+        n_times = len(times)
 
-        n_grupos = max(2, min(self.n_grupos, len(times) // 2))
+        # quantos grupos? explícito (times_por_grupo) ou quantos o usuário pediu
+        if self.times_por_grupo:
+            n_grupos = -(-n_times // max(2, self.times_por_grupo))  # divisão para cima
+        else:
+            n_grupos = self.n_grupos
+        n_grupos = max(2, min(n_grupos, n_times // 2, len(LETRAS_GRUPOS)))
+
+        # ordem de entrada nos grupos: força (potes) ou sorteio
+        if self.distribuicao == "forca":
+            ordenados = sorted(times, key=lambda t: (-t.overall_time, t.nome))
+        else:
+            ordenados = times[:]
+            self.rng.shuffle(ordenados)
+
         grupos: dict[str, list[Time]] = {LETRAS_GRUPOS[i]: [] for i in range(n_grupos)}
-        for i, time in enumerate(times):  # distribuição "snake"
+        for i, time in enumerate(ordenados):  # distribuição "snake"
             ordem = list(grupos)
             if (i // n_grupos) % 2 == 0:
                 grupos[ordem[i % n_grupos]].append(time)
             else:
                 grupos[ordem[::-1][i % n_grupos]].append(time)
 
+        # não dá para classificar mais times do que o menor grupo tem
+        menor_grupo = min(len(g) for g in grupos.values())
+        classificados = max(1, min(self.classificados_por_grupo, menor_grupo))
+
         fase_grupos = Fase(
             nome="Fase de grupos",
             tipo="grupos",
             grupos=grupos,
-            classificados=max(1, self.classificados_por_grupo),
-            ida_e_volta=True,
+            classificados=classificados,
+            ida_e_volta=self.ida_e_volta_grupos,
         )
         fase_grupos.rodadas = self._rodadas_para(fase_grupos)
 
-        total_classificados = n_grupos * fase_grupos.classificados
+        total_classificados = n_grupos * classificados
         size = _proxima_potencia_de_dois(total_classificados)
         self.fases = [fase_grupos] + self._fases_mata(size)
         self.n_grupos = n_grupos
+        self.classificados_por_grupo = classificados
 
     def _rodadas_para(self, fase: Fase) -> list[list[tuple[str, str, str]]]:
         """Reconstrói as rodadas de uma fase de grupos a partir dos grupos."""
@@ -391,16 +481,41 @@ class Campeonato:
 
             confronto.vencedor = self._vencedor_confronto(confronto)
 
+        # semifinal: guarda os perdedores para a disputa de 3º lugar
+        if self.terceiro_lugar and len(fase.confrontos) == 2 and self.terceiro is None:
+            perdedores = []
+            for confronto in fase.confrontos:
+                a, b = confronto.a, confronto.b
+                if a is None or b is None or confronto.vencedor is None:
+                    continue
+                perdedores.append(b if confronto.vencedor is a else a)
+            if len(perdedores) == 2:
+                self.terceiro = Confronto(a=perdedores[0], b=perdedores[1])
+
         fase.concluida = True
         proxima = self.fases[self.fase_idx + 1] if self.fase_idx + 1 < len(self.fases) else None
         if proxima is None:
             self.campeao = fase.confrontos[0].vencedor
+            jogos.extend(self._jogar_terceiro_lugar(fase))
         else:
             self._popular_mata(
                 proxima, [c.vencedor for c in fase.confrontos if c.vencedor]
             )
         self.fase_idx += 1
         return jogos
+
+    def _jogar_terceiro_lugar(self, fase: Fase) -> list[Partida]:
+        """Disputa de 3º lugar (jogo único), se as duas semifinais aconteceram."""
+        terceiro = self.terceiro
+        if terceiro is None or terceiro.jogos or terceiro.a is None or terceiro.b is None:
+            return []
+        jogo = self._simular(
+            terceiro.a.nome, terceiro.b.nome, 1, "Disputa de 3º lugar", ""
+        )
+        terceiro.jogos.append(jogo)
+        terceiro.vencedor = self._vencedor_confronto(terceiro)
+        fase.jogos.append(jogo)
+        return [jogo]
 
     def _vencedor_confronto(self, confronto: Confronto) -> Time | None:
         a, b = confronto.a, confronto.b
@@ -531,6 +646,13 @@ class Campeonato:
             "tabela": tabela,
         }
 
+    @property
+    def jogo_terceiro_lugar(self) -> Partida | None:
+        """Partida da disputa de 3º lugar (``None`` se não houve/não houve ainda)."""
+        if self.terceiro is None or not self.terceiro.jogos:
+            return None
+        return self.terceiro.jogos[-1]
+
     def jogos_da_fase(self, fase_idx: int | None = None) -> list[Partida]:
         idx = self.fase_idx if fase_idx is None else fase_idx
         if idx >= len(self.fases):
@@ -558,13 +680,32 @@ class Campeonato:
                         )
                     )
 
+        terceiro = None
+        if self.terceiro is not None:
+            terceiro = {
+                "a": self.terceiro.a.nome if self.terceiro.a else None,
+                "b": self.terceiro.b.nome if self.terceiro.b else None,
+                "vencedor": (
+                    self.terceiro.vencedor.nome if self.terceiro.vencedor else None
+                ),
+                "jogos": [
+                    self._partida_para_dict(p, len(self.fases) - 1, "", -2, i)
+                    for i, p in enumerate(self.terceiro.jogos)
+                ],
+            }
+
         return {
             "nome": self.nome,
             "formato": self.formato,
             "temporada": self.temporada,
             "ida_e_volta": self.ida_e_volta,
+            "ida_e_volta_mata": self.ida_e_volta_mata,
             "n_grupos": self.n_grupos,
+            "times_por_grupo": self.times_por_grupo,
             "classificados_por_grupo": self.classificados_por_grupo,
+            "distribuicao": self.distribuicao,
+            "terceiro_lugar": self.terceiro_lugar,
+            "terceiro": terceiro,
             "promovidos": self.promovidos,
             "rebaixados": self.rebaixados,
             "final_unica": self.final_unica,
@@ -629,6 +770,10 @@ class Campeonato:
             promovidos=dados.get("promovidos", 0),
             rebaixados=dados.get("rebaixados", 0),
             final_unica=dados.get("final_unica", True),
+            ida_e_volta_mata=dados.get("ida_e_volta_mata"),
+            times_por_grupo=dados.get("times_por_grupo"),
+            distribuicao=dados.get("distribuicao", "sorteio"),
+            terceiro_lugar=dados.get("terceiro_lugar", False),
         )
 
         # fases salvas (substituem o sorteio feito no __init__)
@@ -681,6 +826,32 @@ class Campeonato:
             else:
                 fase.jogos.append(partida)
             camp.resultados.append(partida)
+
+        # disputa de 3º lugar (fica fora dos confrontos do mata-mata)
+        terceiro = dados.get("terceiro")
+        if terceiro:
+            camp.terceiro = Confronto(
+                a=resolver(terceiro["a"]) if terceiro.get("a") else None,
+                b=resolver(terceiro["b"]) if terceiro.get("b") else None,
+                vencedor=(
+                    resolver(terceiro["vencedor"])
+                    if terceiro.get("vencedor")
+                    else None
+                ),
+            )
+            for rd in terceiro.get("jogos", []):
+                partida = Partida(
+                    rodada=rd.get("rodada", 1),
+                    time_casa=rd["time_casa"],
+                    time_fora=rd["time_fora"],
+                    gols_casa=rd["gols_casa"],
+                    gols_fora=rd["gols_fora"],
+                    jogada=True,
+                    publico=rd.get("publico", 0),
+                    fase=rd.get("fase", "Disputa de 3º lugar"),
+                )
+                camp.terceiro.jogos.append(partida)
+                camp.resultados.append(partida)
 
         camp.fase_idx = dados.get("fase_idx", 0)
         camp.campeao = resolver(dados["campeao"]) if dados.get("campeao") else None
