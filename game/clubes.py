@@ -252,7 +252,7 @@ TIMES_DATA: list[Clube] = [
         "B", "Ilha do Retiro", 26_418, 1905, "STC",
     ),
     Clube(
-        "São Bernardo", "SBR", "São Bernardo do Campo", "SP", "🟡⚫", "#F9A825", "#212121",
+        "São Bernardo", "SBE", "São Bernardo do Campo", "SP", "🟡⚫", "#F9A825", "#212121",
         38, 62, 3_000_000, 5, 45,
         "B", "1º de Maio", 15_000, 2004, "INL",
     ),
@@ -301,7 +301,7 @@ TIMES_DATA: list[Clube] = [
         "C", "Batistão", 15_575, 1946, "ITA",
     ),
     Clube(
-        "Ferroviária", "FER", "Araraquara", "SP", "🔴⚫", "#C62828", "#212121",
+        "Ferroviária", "FRV", "Araraquara", "SP", "🔴⚫", "#C62828", "#212121",
         38, 60, 3_000_000, 10, 52,
         "C", "Fonte Luminosa", 20_000, 1950, "NOV",
     ),
@@ -435,7 +435,7 @@ TIMES_DATA: list[Clube] = [
         "D", "Estádio Municipal de Blumenau", 8_000, 2020, "MDI",
     ),
     Clube(
-        "Brasil de Pelotas", "BRS", "Pelotas", "RS", "🟡⚫", "#F9A825", "#212121",
+        "Brasil de Pelotas", "BRS", "Pelotas", "RS", "🔴⚫", "#C62828", "#212121",
         32, 54, 1_500_000, 8, 46,
         "D", "Bento Freitas", 18_000, 1911, "JUV",
     ),
