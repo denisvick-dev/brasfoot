@@ -8,6 +8,9 @@ game/__init__.py
 game/modelos.py      Jogador, Time, Partida, Noticia
 game/clubes.py       fichas dos 156 clubes (Séries A, B, C e D)
 game/banco_dados.py  elencos a partir das fichas + API de consulta
+game/escudos.py      escudos de assets/escudos/ embutidos como data URI
+assets/escudos/      escudos dos 156 clubes (PNG oficial ou SVG)
+scripts/gerar_escudos.py  desenha escudo genérico para clube sem imagem
 game/dados.py        alias -> game.banco_dados (compatibilidade)
 game/jogo_engine.py  MatchEngine (simulação de partidas)
 game/campeonato.py   League (calendário, rodadas, classificação)
@@ -61,6 +64,42 @@ resumo_banco()                           # contagem por divisão
 
 Na interface, o seletor **Divisão** da tela inicial define qual campeonato é
 disputado (Série A por padrão); o banco inteiro fica carregado em memória.
+
+## Escudos
+
+Os escudos ficam em `assets/escudos/` com o nome da sigla do clube —
+`FLA.png`, `ABE.svg`… — e a interface mostra a imagem no lugar do emoji
+(cartões de clube, tabelas, títulos e confrontos). Como o app injeta HTML no
+`st.markdown`, a imagem é embutida como *data URI* (cache em `game/escudos.py`),
+sem servidor de estáticos.
+
+| Origem | Clubes |
+|---|---|
+| PNG oficial | 111 |
+| SVG importado (Séries A/B) | 4 |
+| SVG genérico (duas cores + sigla) | 41 |
+
+Os 41 escudos genéricos são de clubes da Série D que não têm imagem pública
+indexada; foram desenhados por `scripts/gerar_escudos.py` (escudo em duas cores
+com a sigla), no estilo "escudo genérico" dos jogos de futebol.
+
+Para trocar um escudo, basta salvar `assets/escudos/<SIGLA>.png` (PNG com fundo
+transparente). Para criar um clube novo sem imagem:
+
+```bash
+python scripts/gerar_escudos.py            # só os que faltam
+python scripts/gerar_escudos.py --forcar   # refaz só os genéricos
+```
+
+```python
+from game.escudos import imagem, tem_escudo
+imagem("FLA", "🔴⚫")     # <img class="escudo" src="data:image/png;base64,…">
+tem_escudo("FLA")         # True
+```
+
+Clube sem imagem (por exemplo, criado pelo jogador) cai no emoji de sempre.
+Os escudos são marcas dos clubes; aqui são usados apenas para identificá-los
+no jogo.
 
 ## Correções aplicadas
 

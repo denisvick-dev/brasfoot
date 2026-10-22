@@ -13,6 +13,8 @@ O banco cobre as quatro divisões da temporada 2026:
 * **Série C** — 20 clubes
 * **Série D** — 96 clubes (os 96 classificados da edição 2026)
 
+Os escudos de cada clube ficam em ``assets/escudos`` (veja ``game.escudos``).
+
 Total: 156 clubes. As faixas de força e reputação descem degrau a degrau
 (com pequenas sobreposições na fronteira: o clube recém-rebaixado costuma ser
 mais forte que o recém-promovido).

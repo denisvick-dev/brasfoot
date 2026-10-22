@@ -40,6 +40,7 @@ from game.criador import (
     salvar_clube,
     salvar_jogador,
 )
+from game.escudos import imagem as escudo_img
 from game.liga import League
 from game.mercado import Market
 from game.modelos import Jogador, Noticia, Time
@@ -337,6 +338,14 @@ button[data-testid="baseButton-primary"],
 .club-name{
     font-family:var(--font-display); font-weight:800; font-size:1.05rem;
     letter-spacing:-.01em; margin:.55rem 0 .1rem 0;
+}
+.club-crest .escudo-crest{
+    width:100%; height:100%; object-fit:contain; padding:2px;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.28));
+}
+img.escudo{
+    width:1.15em; height:1.15em; object-fit:contain;
+    vertical-align:-.22em; margin-right:.26em;
 }
 .club-meta{ color:var(--ink-3); font-size:.82rem; }
 .kv{ display:flex; justify-content:space-between; font-size:.85rem; padding:.18rem 0; }
@@ -659,7 +668,7 @@ def tela_inicial():
                     <div class="body">
                         <div class="club-crest"
                              style="--c1:{time.cor_primaria};--c2:{time.cor_secundaria}">
-                            {time.escudo_emoji}
+                            {escudo_img(time.sigla, time.escudo_emoji, "escudo-crest")}
                         </div>
                         <div class="club-name">{time.nome}</div>
                         <div class="club-meta">📍 {time.cidade}/{time.estado}</div>
@@ -703,7 +712,7 @@ def sidebar():
             f"""
         <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.4rem;">
             <div class="club-crest" style="--c1:{time.cor_primaria};--c2:{time.cor_secundaria}">
-                {time.escudo_emoji}
+                {escudo_img(time.sigla, time.escudo_emoji, "escudo-crest")}
             </div>
             <div>
                 <div style="font-family:var(--font-display);font-weight:800;font-size:1.15rem;line-height:1.1">
@@ -805,7 +814,7 @@ def tela_painel():
     st.markdown(
         f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🏠 {time.escudo_emoji} {time.nome}</h1>
+        <h1 style="font-size:1.8rem">🏠 {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
         <p>Rodada {league.rodada_atual} de {league.total_rodadas} ·
         {pos}º colocado · {formatar_dinheiro(time.financas)} em caixa</p>
     </div>
@@ -882,14 +891,14 @@ def tela_painel():
             linhas.append(
                 f"<tr class='{me}'><td class='num'>{posicao}º</td>"
                 f"<td><span class='zona' style='background:{zona}'></span></td>"
-                f"<td>{t.escudo_emoji} {t.sigla}</td>"
+                f"<td>{escudo_img(t.sigla, t.escudo_emoji)} {t.sigla}</td>"
                 f"<td class='num'><b>{t.pontos}</b></td>"
                 f"<td class='num'>{t.vitorias}V {t.empates}E {t.derrotas}D</td></tr>"
             )
         if pos > 8:
             linhas.append(
                 f"<tr class='me'><td class='num'>{pos}º</td><td></td>"
-                f"<td>{time.escudo_emoji} {time.sigla}</td>"
+                f"<td>{escudo_img(time.sigla, time.escudo_emoji)} {time.sigla}</td>"
                 f"<td class='num'><b>{time.pontos}</b></td>"
                 f"<td class='num'>{time.vitorias}V {time.empates}E {time.derrotas}D</td></tr>"
             )
@@ -918,7 +927,7 @@ def tela_elenco():
     st.markdown(
         f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">👥 Elenco · {time.escudo_emoji} {time.nome}</h1>
+        <h1 style="font-size:1.8rem">👥 Elenco · {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
         <p>{len(time.jogadores)} jogadores · overall {time.overall_time} ·
         valor de elenco {formatar_dinheiro(time.valor_elenco)}</p>
     </div>
@@ -1020,7 +1029,7 @@ def tela_tatica():
     st.markdown(
         f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">📋 Tática · {time.escudo_emoji} {time.nome}</h1>
+        <h1 style="font-size:1.8rem">📋 Tática · {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
         <p>Formação {time.formacao} · estilo {_nome_estilo(time.tatica_ofensiva)}</p>
     </div>
     """,
@@ -1189,7 +1198,7 @@ def tela_jogar():
         f"""
     <div class="hero" style="padding:1.4rem 1.6rem">
         <h1 style="font-size:1.8rem">⚽ Rodada {league.rodada_atual + 1} de {league.total_rodadas}</h1>
-        <p>{time.escudo_emoji} {time.nome} · {league.proximo_adversario(time.nome)}</p>
+        <p>{escudo_img(time.sigla, time.escudo_emoji)} {time.nome} · {league.proximo_adversario(time.nome)}</p>
     </div>
     """,
         unsafe_allow_html=True,
@@ -1297,7 +1306,7 @@ def _cartao_time(time: Time, local: str) -> str:
     <div class="stat" style="--accent:{time.cor_primaria}">
         <div style="display:flex;align-items:center;gap:.6rem">
             <div class="club-crest" style="--c1:{time.cor_primaria};--c2:{time.cor_secundaria}">
-                {time.escudo_emoji}
+                {escudo_img(time.sigla, time.escudo_emoji, "escudo-crest")}
             </div>
             <div>
                 <div style="font-family:var(--font-display);font-weight:800;font-size:1.05rem">
@@ -1347,7 +1356,7 @@ def _tela_fim_temporada(time: Time, league: League):
                              color:#1F1300">
         <h1 style="color:#1F1300">🏆 CAMPEONATO ENCERRADO</h1>
         <p style="color:rgba(31,19,0,.85)">
-            Campeão: <b>{campeao.escudo_emoji} {campeao.nome}</b> com {campeao.pontos} pontos<br>
+            Campeão: <b>{escudo_img(campeao.sigla, campeao.escudo_emoji)} {campeao.nome}</b> com {campeao.pontos} pontos<br>
             Sua posição: <b>{pos}º</b> com {time.pontos} pontos
         </p>
     </div>
@@ -1425,7 +1434,7 @@ def tela_classificacao():
                 f"<tr class='{me}' title='{zona_txt}'>"
                 f"<td class='num'><b>{pos}º</b></td>"
                 f"<td class='num'><span class='zona' style='background:{zona}'></span></td>"
-                f"<td>{t.escudo_emoji} {t.nome}</td>"
+                f"<td>{escudo_img(t.sigla, t.escudo_emoji)} {t.nome}</td>"
                 f"<td class='num'><b>{t.pontos}</b></td>"
                 f"<td class='num'>{t.jogos_campeonato}</td>"
                 f"<td class='num'>{t.vitorias}</td>"
@@ -1753,7 +1762,7 @@ def tela_criador():
                     <div class="stripe" style="--c1:{clube.cor_primaria}"></div>
                     <div class="body">
                         <div class="club-crest" style="--c1:{clube.cor_primaria};--c2:{clube.cor_secundaria}">
-                            {clube.escudo_emoji}
+                            {escudo_img(clube.sigla, clube.escudo_emoji, "escudo-crest")}
                         </div>
                         <div class="club-name">{clube.nome} ({clube.sigla})</div>
                         <div class="club-meta">📍 {clube.cidade}/{clube.estado or '—'} ·
@@ -2089,7 +2098,7 @@ def _html_tabela(linhas: list[dict]) -> str:
         classe_sg = "p-ok" if sg > 0 else "p-bad" if sg < 0 else "p-info"
         corpo.append(
             f"<tr><td class='num'>{i}º</td>"
-            f"<td>{t.escudo_emoji} {t.nome}</td>"
+            f"<td>{escudo_img(t.sigla, t.escudo_emoji)} {t.nome}</td>"
             f"<td class='num'><b>{l['pts']}</b></td>"
             f"<td class='num'>{l['j']}</td>"
             f"<td class='num'>{l['v']}</td>"
@@ -2137,7 +2146,7 @@ def tela_competicao():
                 f"""
             <div class="hero" style="background:linear-gradient(120deg,#92400E 0%,#F5B301 55%,#FDE68A 100%);
                                      color:#1F1300;padding:1.6rem">
-                <h1 style="color:#1F1300;font-size:1.6rem">🏆 {campeao.escudo_emoji} {campeao.nome} CAMPEÃO</h1>
+                <h1 style="color:#1F1300;font-size:1.6rem">🏆 {escudo_img(campeao.sigla, campeao.escudo_emoji)} {campeao.nome} CAMPEÃO</h1>
             </div>
             """,
                 unsafe_allow_html=True,
@@ -2210,14 +2219,14 @@ def tela_competicao():
                 continue
             if a is None:
                 st.markdown(
-                    f'<div class="res">🎟️ <b>{b.escudo_emoji} {b.nome}</b> '
+                    f'<div class="res">🎟️ <b>{escudo_img(b.sigla, b.escudo_emoji)} {b.nome}</b> '
                     f'<span class="tag e" style="margin-left:auto">Folga (BYE)</span></div>',
                     unsafe_allow_html=True,
                 )
                 continue
             if b is None:
                 st.markdown(
-                    f'<div class="res">🎟️ <b>{a.escudo_emoji} {a.nome}</b> '
+                    f'<div class="res">🎟️ <b>{escudo_img(a.sigla, a.escudo_emoji)} {a.nome}</b> '
                     f'<span class="tag e" style="margin-left:auto">Folga (BYE)</span></div>',
                     unsafe_allow_html=True,
                 )
@@ -2236,9 +2245,9 @@ def tela_competicao():
                 f"""
             <div class="res" style="flex-wrap:wrap">
                 <span class="tag {cls_a}">{a.sigla}</span>
-                <span><b>{a.escudo_emoji} {a.nome}</b></span>
+                <span><b>{escudo_img(a.sigla, a.escudo_emoji)} {a.nome}</b></span>
                 <span style="font-size:1.25rem"><b>{gols_a} x {gols_b}</b></span>
-                <span><b>{b.escudo_emoji} {b.nome}</b></span>
+                <span><b>{escudo_img(b.sigla, b.escudo_emoji)} {b.nome}</b></span>
                 <span class="tag {cls_b}">{b.sigla}</span>
                 <span style="margin-left:auto" class="club-meta">{jogos_txt or 'aguardando'}</span>
             </div>
