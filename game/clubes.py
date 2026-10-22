@@ -555,14 +555,14 @@ TIMES_DATA: list[Clube] = [
         "D", "Frei Epifânio", 12_000, 1964, "MOT",
     ),
     Clube(
-        "Independência", "IND", "Rio Branco", "AC", "🔵⚪", "#1565C0", "#FFFFFF",
+        "Independência", "IND", "Rio Branco", "AC", "🔴🟢", "#C62828", "#0E7A3F",
         26, 46, 400_000, 2, 36,
         "D", "Arena da Floresta", 20_000, 1946, "GAL",
     ),
     Clube(
-        "Inhumas", "INH", "Inhumas", "GO", "🟢🔴", "#0E7A3F", "#7A1B2E",
+        "Inhumas", "INH", "Inhumas", "GO", "🔴⚪", "#7A1B2E", "#FFFFFF",
         24, 44, 200_000, 2, 34,
-        "D", "Estádio Municipal de Inhumas", 5_000, 1970, "ABE",
+        "D", "Estádio Zico Brandão", 4_380, 1944, "ABE",
     ),
     Clube(
         "Jacuipense", "JAC", "Riachão do Jacuípe", "BA", "🔵⚪", "#1565C0", "#FFFFFF",
