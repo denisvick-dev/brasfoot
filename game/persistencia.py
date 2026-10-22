@@ -40,16 +40,17 @@ CAMPOS_EXTRA_TIME = ("divisao", "estadio", "capacidade", "fundacao", "rival", "o
 # ============================================================
 # utilidades
 # ============================================================
+def unicomb(c: str) -> bool:
+    """True se o caractere é um acento combinante (usado ao remover acentos)."""
+    return bool(unicodedata.combining(c))
+
+
 def slugify(texto: str) -> str:
     """Converte um nome em slug: 'America-RJ' -> 'america-rj'."""
     texto = unicodedata.normalize("NFKD", str(texto))
     texto = "".join(c for c in texto if not unicomb(c))
     texto = re.sub(r"[^a-zA-Z0-9]+", "-", texto).strip("-").lower()
     return texto
-
-
-def unicomb(c: str) -> bool:
-    return unicodedata.combining(c)
 
 
 def _caminho(tipo: str) -> Path:
@@ -59,7 +60,7 @@ def _caminho(tipo: str) -> Path:
     return DADOS_DIR / ARQUIVOS[tipo]
 
 
-def _ler(tipo: str) -> dict:
+def _ler(tipo: str) -> dict[str, Any]:
     caminho = _caminho(tipo)
     if not caminho.exists():
         return {}
@@ -69,7 +70,7 @@ def _ler(tipo: str) -> dict:
         return {}
 
 
-def _gravar(tipo: str, registros: dict):
+def _gravar(tipo: str, registros: dict[str, Any]):
     _caminho(tipo).write_text(
         json.dumps(registros, ensure_ascii=False, indent=2), encoding="utf-8"
     )
@@ -84,7 +85,7 @@ def salvar(tipo: str, nome: str, dados: Any) -> str:
     base = slugify(nome) or tipo
     slug = base
     i = 2
-    while slug in registros and registros[slug]["nome"] != nome:
+    while slug in registros and registros[slug].get("nome") != nome:
         slug = f"{base}-{i}"
         i += 1
 
@@ -98,12 +99,12 @@ def salvar(tipo: str, nome: str, dados: Any) -> str:
     return slug
 
 
-def listar(tipo: str) -> list[dict]:
+def listar(tipo: str) -> list[dict[str, Any]]:
     """Lista os registros salvos de um tipo, em ordem alfabética."""
-    return sorted(_ler(tipo).values(), key=lambda r: r["nome"].lower())
+    return sorted(_ler(tipo).values(), key=lambda r: str(r.get("nome", "")).lower())
 
 
-def carregar(tipo: str, slug: str) -> dict | None:
+def carregar(tipo: str, slug: str) -> dict[str, Any] | None:
     """Devolve o registro completo (nome, slug, dados) ou None."""
     return _ler(tipo).get(slug)
 
@@ -124,31 +125,28 @@ def total(tipo: str) -> int:
 # ============================================================
 # (des)serialização
 # ============================================================
-def jogador_para_dict(j: Jogador) -> dict:
+def jogador_para_dict(j: Jogador) -> dict[str, Any]:
     return asdict(j)
 
 
-def jogador_de_dict(d: dict) -> Jogador:
+def jogador_de_dict(d: dict[str, Any]) -> Jogador:
     nomes = {f.name for f in fields(Jogador)}
     return Jogador(**{k: v for k, v in d.items() if k in nomes})
 
 
-def time_para_dict(t: Time) -> dict:
+def time_para_dict(t: Time) -> dict[str, Any]:
     d = asdict(t)
     for campo in CAMPOS_EXTRA_TIME:
         d[campo] = getattr(t, campo, None)
     return d
 
 
-def time_de_dict(d: dict) -> Time:
+def time_de_dict(d: dict[str, Any]) -> Time:
     nomes = {f.name for f in fields(Time)}
     kwargs = {k: v for k, v in d.items() if k in nomes}
     kwargs["jogadores"] = [jogador_de_dict(j) for j in kwargs.get("jogadores", [])]
     time = Time(**kwargs)
     for campo in CAMPOS_EXTRA_TIME:
         if d.get(campo) is not None:
-            try:
-                setattr(time, campo, d[campo])
-            except Exception:
-                pass
+            setattr(time, campo, d[campo])
     return time

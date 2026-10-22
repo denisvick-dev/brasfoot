@@ -17,7 +17,7 @@ Uso rapido
 """
 
 import random
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from game.modelos import Jogador, Time
 
@@ -141,7 +141,7 @@ def _nome_aleatorio() -> str:
 
 def _gerar_jogadores_posicao(
     posicao: str, qtd: int, min_hab: int, max_hab: int
-) -> list:
+) -> list[Jogador]:
     jogadores = []
     for _ in range(qtd):
         idade = random.randint(18, 36)
@@ -239,7 +239,7 @@ def _gerar_jogadores_posicao(
     return jogadores
 
 
-def _gerar_elenco(forca_min: int, forca_max: int) -> list:
+def _gerar_elenco(forca_min: int, forca_max: int) -> list[Jogador]:
     """Gera um elenco completo."""
     elenco = []
     elenco += _gerar_jogadores_posicao("GOL", 3, forca_min, forca_max)
@@ -252,7 +252,7 @@ def _gerar_elenco(forca_min: int, forca_max: int) -> list:
 
 
 # ============================================================
-# Banco de clubes (60 times em 3 divisões)
+# Banco de clubes (61 times em 3 divisões)
 # ============================================================
 class Clube(NamedTuple):
     """Ficha de um clube no banco de dados."""
@@ -274,10 +274,10 @@ class Clube(NamedTuple):
     estadio: str
     capacidade: int
     fundacao: int
-    rival: Optional[str] = None
+    rival: str | None = None
 
 
-TIMES_DATA: list = [
+TIMES_DATA: list[Clube] = [
     # ============================================================
     # SÉRIE A (20 clubes) — ordem e valores idênticos à versão anterior
     # ============================================================
@@ -424,7 +424,7 @@ TOTAL_TIMES = len(TIMES_DATA)
 # ============================================================
 # Consultas ao banco
 # ============================================================
-def clubes_por_divisao(divisao: str) -> list:
+def clubes_por_divisao(divisao: str) -> list[Clube]:
     """Retorna as fichas (Clube) de uma divisão: 'A', 'B' ou 'C'."""
     div = str(divisao).upper()
     if div not in DIVISOES:
@@ -434,7 +434,7 @@ def clubes_por_divisao(divisao: str) -> list:
     return [c for c in TIMES_DATA if c.divisao == div]
 
 
-def buscar_clube(sigla: str) -> Optional[Clube]:
+def buscar_clube(sigla: str) -> Clube | None:
     """Busca a ficha de um clube pela sigla (ex: 'FLA')."""
     alvo = str(sigla).upper()
     for c in TIMES_DATA:
@@ -456,11 +456,11 @@ def resumo_banco() -> str:
 # Criação dos times
 # ============================================================
 def criar_times(
-    quantidade: Optional[int] = 20,
-    divisao: Optional[str] = None,
+    quantidade: int | None = 20,
+    divisao: str | None = None,
     aleatorio: bool = False,
-    semente: Optional[int] = None,
-) -> list:
+    semente: int | None = None,
+) -> list[Time]:
     """
     Cria os times do jogo.
 
@@ -533,18 +533,13 @@ def _criar_time_de_ficha(clube: Clube, id_time: int = 0) -> Time:
         torcida=clube.torcida,
         reputacao=clube.reputacao,
     )
-    # Metadados extras: anexados quando a classe Time aceita
-    # (se ela usar __slots__ ou não prever esses campos, simplesmente
-    # ignoramos — a ficha continua disponível em buscar_clube(sigla)).
-    try:
-        time.divisao = clube.divisao
-        time.estadio = clube.estadio
-        time.capacidade = clube.capacidade
-        time.fundacao = clube.fundacao
-        time.rival = clube.rival
-        time.origem = "banco"
-    except Exception:
-        pass
+    # Metadados da ficha do clube (campos da dataclass Time)
+    time.divisao = clube.divisao
+    time.estadio = clube.estadio
+    time.capacidade = clube.capacidade
+    time.fundacao = clube.fundacao
+    time.rival = clube.rival
+    time.origem = "banco"
 
     time.auto_escalar()
     return time
@@ -570,7 +565,7 @@ def nomes_conhecidos() -> list[str]:
     return [c.nome for c in TIMES_DATA]
 
 
-def criar_todas_divisoes() -> dict:
+def criar_todas_divisoes() -> dict[str, list[Time]]:
     """
     Cria os times separados por divisão.
 

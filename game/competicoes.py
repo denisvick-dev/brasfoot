@@ -19,14 +19,14 @@ Uso rápido
 
 from __future__ import annotations
 
-import math
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import TypedDict
 
 from game import persistencia
 from game.jogo_engine import MatchEngine
-from game.modelos import Partida, Time
+from game.modelos import Jogador, Partida, Time
 
 FORMATOS = {
     "pontos_corridos": "Pontos corridos (todos contra todos)",
@@ -44,6 +44,20 @@ NOMES_MATA = {
 }
 
 LETRAS_GRUPOS = "ABCDEFGHIJKL"
+
+
+class LinhaTabela(TypedDict):
+    """Uma linha da tabela de classificação."""
+
+    time: Time
+    pts: int
+    j: int
+    v: int
+    e: int
+    d: int
+    gp: int
+    gc: int
+    sg: int
 
 
 # ============================================================
@@ -191,6 +205,8 @@ class Campeonato:
         if self.encerrado:
             return "Encerrado"
         fase = self.fase_atual
+        if fase is None:
+            return "Encerrado"
         if fase.tipo == "grupos":
             return f"{fase.nome}: rodada {fase.rodada_atual}/{fase.total_rodadas}"
         return f"{fase.nome}: {len(fase.confrontos)} confronto(s)"
@@ -221,13 +237,15 @@ class Campeonato:
             nome="Pontos corridos",
             tipo="grupos",
             grupos={"Geral": list(self.times)},
-            rodadas=[[("", casa, fora) for casa, fora in jogos] for jogos in rodadas],
+            rodadas=[
+                [("Geral", casa, fora) for casa, fora in jogos] for jogos in rodadas
+            ],
             classificados=0,
             ida_e_volta=self.ida_e_volta,
         )
         self.fases = [fase]
 
-    def _fases_mata(self, n_times: int, primeira_eh_grupos: bool) -> list[Fase]:
+    def _fases_mata(self, n_times: int) -> list[Fase]:
         fases = []
         restantes = n_times
         while restantes >= 2:
@@ -250,7 +268,7 @@ class Campeonato:
         participantes = list(self.times) + [None] * (size - len(self.times))
         self.rng.shuffle(participantes)
 
-        self.fases = self._fases_mata(size, primeira_eh_grupos=False)
+        self.fases = self._fases_mata(size)
         for i, confronto in enumerate(self.fases[0].confrontos):
             confronto.a = participantes[2 * i]
             confronto.b = participantes[2 * i + 1]
@@ -279,7 +297,7 @@ class Campeonato:
 
         total_classificados = n_grupos * fase_grupos.classificados
         size = _proxima_potencia_de_dois(total_classificados)
-        self.fases = [fase_grupos] + self._fases_mata(size, primeira_eh_grupos=True)
+        self.fases = [fase_grupos] + self._fases_mata(size)
         self.n_grupos = n_grupos
 
     def _rodadas_para(self, fase: Fase) -> list[list[tuple[str, str, str]]]:
@@ -301,6 +319,8 @@ class Campeonato:
         if self.encerrado:
             return []
         fase = self.fase_atual
+        if fase is None:
+            return []
         if fase.tipo == "grupos":
             jogos = self._jogar_rodada(fase)
             if fase.rodada_atual >= fase.total_rodadas:
@@ -324,6 +344,8 @@ class Campeonato:
         return partida
 
     def _jogar_rodada(self, fase: Fase) -> list[Partida]:
+        if fase.rodada_atual >= fase.total_rodadas:
+            return []
         rodada = fase.rodadas[fase.rodada_atual]
         fase.rodada_atual += 1
         jogos = []
@@ -348,21 +370,22 @@ class Campeonato:
     def _jogar_mata(self, fase: Fase) -> list[Partida]:
         jogos = []
         for confronto in fase.confrontos:
-            if confronto.a is None and confronto.b is None:
+            a, b = confronto.a, confronto.b
+            if a is None and b is None:
                 continue
-            if confronto.b is None:
-                confronto.vencedor = confronto.a  # folga (BYE)
+            if b is None:
+                confronto.vencedor = a  # folga (BYE)
                 continue
-            if confronto.a is None:
-                confronto.vencedor = confronto.b
+            if a is None:
+                confronto.vencedor = b
                 continue
 
-            ida = self._simular(confronto.a.nome, confronto.b.nome, 1, fase.nome, "")
+            ida = self._simular(a.nome, b.nome, 1, fase.nome, "")
             confronto.jogos.append(ida)
             jogos.append(ida)
 
             if fase.ida_e_volta:
-                volta = self._simular(confronto.b.nome, confronto.a.nome, 2, fase.nome, "")
+                volta = self._simular(b.nome, a.nome, 2, fase.nome, "")
                 confronto.jogos.append(volta)
                 jogos.append(volta)
 
@@ -379,8 +402,10 @@ class Campeonato:
         self.fase_idx += 1
         return jogos
 
-    def _vencedor_confronto(self, confronto: Confronto) -> Time:
+    def _vencedor_confronto(self, confronto: Confronto) -> Time | None:
         a, b = confronto.a, confronto.b
+        if a is None or b is None:
+            return a or b
         gols_a, gols_b = confronto.gols(a), confronto.gols(b)
         if gols_a > gols_b:
             return a
@@ -421,7 +446,9 @@ class Campeonato:
         return classificados
 
     # ---- consultas --------------------------------------------------
-    def tabela(self, fase: Fase | None = None, grupo: str | None = None) -> list[dict]:
+    def tabela(
+        self, fase: Fase | None = None, grupo: str | None = None
+    ) -> list[LinhaTabela]:
         """Classificação de uma fase de grupos (ou de um grupo específico)."""
         fase = fase or self.fases[min(self.fase_idx, len(self.fases) - 1)]
         if fase.tipo != "grupos":
@@ -432,14 +459,23 @@ class Campeonato:
         else:
             times = [t for g in fase.grupos.values() for t in g]
 
-        dados = {
-            t.nome: dict(time=t, pts=0, j=0, v=0, e=0, d=0, gp=0, gc=0) for t in times
+        dados: dict[str, LinhaTabela] = {
+            t.nome: LinhaTabela(
+                time=t, pts=0, j=0, v=0, e=0, d=0, gp=0, gc=0, sg=0
+            )
+            for t in times
         }
 
         jogos = [
             p
             for p in fase.jogos
-            if p.jogada and (grupo is None or p.grupo == grupo)
+            if p.jogada
+            and (
+                grupo is None
+                # campeonatos antigos gravavam "" no lugar de "Geral"
+                or p.grupo == grupo
+                or (grupo == "Geral" and not p.grupo)
+            )
         ]
         for p in jogos:
             lados = (
@@ -461,8 +497,6 @@ class Campeonato:
                 else:
                     linha["e"] += 1
                     linha["pts"] += 1
-            if grupo is None and p.grupo:
-                pass
 
         for linha in dados.values():
             linha["sg"] = linha["gp"] - linha["gc"]
@@ -476,7 +510,7 @@ class Campeonato:
         fase = fase or self.fase_atual
         return sorted(fase.grupos) if fase and fase.tipo == "grupos" else []
 
-    def artilharia(self, top: int = 10) -> list[tuple]:
+    def artilharia(self, top: int = 10) -> list[tuple[Jogador, str]]:
         jogadores = []
         for time in self.times:
             for j in time.jogadores:
@@ -581,7 +615,7 @@ class Campeonato:
         }
 
     @classmethod
-    def de_dict(cls, dados: dict, resolver: Callable[[str], Time | None]) -> "Campeonato":
+    def de_dict(cls, dados: dict, resolver: Callable[[str], Time | None]) -> Campeonato:
         """Reconstrói um campeonato salvo. ``resolver`` converte nome -> Time."""
         times = [t for t in (resolver(n) for n in dados["times"]) if t]
         camp = cls(

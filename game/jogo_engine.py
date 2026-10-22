@@ -240,7 +240,9 @@ class MatchEngine:
 
         return None
 
-    def _evento_gol(self, minuto: int, time_atk: Time, partida: Partida) -> str:
+    def _evento_gol(
+        self, minuto: int, time_atk: Time, partida: Partida
+    ) -> str | None:
         """Processa um evento de gol."""
         # Chance real de gol baseada na força
         atacantes = [
@@ -280,9 +282,8 @@ class MatchEngine:
         """Calcula o público do jogo, respeitando a capacidade do estádio."""
         base = time_casa.torcida * 500 * random.uniform(0.6, 1.15)
 
-        capacidade = getattr(time_casa, "capacidade", None)
-        if capacidade:
-            teto = capacidade * random.uniform(0.55, 1.0)
+        if time_casa.capacidade > 0:
+            teto = time_casa.capacidade * random.uniform(0.55, 1.0)
             base = min(base, teto)
 
         return max(200, int(base))
