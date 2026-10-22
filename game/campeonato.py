@@ -22,7 +22,7 @@ class League:
         self.resultados: dict[int, list[Partida]] = {}
         self.noticias: list[Noticia] = []
         self.engine = MatchEngine()
-        self.temporada = 2024
+        self.temporada = 2026
         self.campeonato_encerrado = False
 
         self._gerar_calendario()

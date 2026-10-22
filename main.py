@@ -4,8 +4,8 @@ Demo: roda uma temporada inteira no terminal.
 Uso:
     python main.py            # Brasileirão com 20 clubes (Série A)
     python main.py 24         # 24 clubes
-    python main.py 61         # banco inteiro (61 clubes)
     python main.py 20 7       # 20 clubes, semente 7 (reproduzível)
+    python main.py 156        # banco inteiro (156 clubes, 4 divisões)
 """
 
 import random

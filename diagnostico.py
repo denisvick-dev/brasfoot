@@ -112,4 +112,4 @@ def medir(n_times: int, temporadas: int, semente: int = 1) -> None:
 
 if __name__ == "__main__":
     medir(20, 5, semente=1)
-    medir(61, 1, semente=2)
+    medir(156, 1, semente=2)
