@@ -13,9 +13,9 @@ from game.modelos import Gol, Partida
 
 #: Duração total do relógio, em segundos, por opção de velocidade.
 VELOCIDADES: dict[str, float] = {
-    "⏩ Rápida": 2.0,
-    "▶️ Normal": 5.0,
-    "🐢 Detalhada": 10.0,
+    "⏩ Rápida": 5.0,
+    "▶️ Normal": 10.0,
+    "🐢 Detalhada": 15.0,
 }
 
 VELOCIDADE_PADRAO = "▶️ Normal"
