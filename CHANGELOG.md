@@ -3,6 +3,25 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 O projeto usa versionamento semântico.
 
+## [2.3.0] — 2026-10-23
+
+### Adicionado
+
+- **Gol piscando em vermelho** no momento do lance: no painel ao vivo, o jogo
+  que acabou de marcar fica com o placar piscando (fundo vermelho, borda e
+  escore em destaque) por alguns minutos de jogo, com um selo **GOOOL!** no
+  jogo do seu clube.
+- **Som de gol**: torcida explodindo + trompa de estádio, sintetizados em
+  código (`ui/sons.py`, só biblioteca padrão) e tocados via `<audio autoplay>`
+  embutido no HTML do painel. Nenhum arquivo de áudio no repositório.
+- **Quadro do gol segura um instante a mais** (0,45 s) na animação, para dar
+  tempo de ver o pisca e ouvir o som — mesmo na velocidade Rápida.
+- **`🔊 Som de gol`** na tela de jogo: liga/desliga o efeito (fica ligado por
+  padrão). Respeita `prefers-reduced-motion` para quem desliga animações.
+- 13 testes novos (93 no total): WAV válido e sem clipping, determinismo do
+  som, `<audio>` com id por minuto, janela do pisca e um teste de UI que
+  confere o áudio e a classe `gol-agora` durante a rodada.
+
 ## [2.2.0] — 2026-10-23
 
 ### Adicionado

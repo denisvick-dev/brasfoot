@@ -3,14 +3,18 @@
 from game.jogo_engine import MatchEngine
 from game.modelos import Gol, Partida
 from ui.ao_vivo import (
+    JANELA_FLASH,
     VELOCIDADES,
+    gol_recente,
     gols_do_minuto,
+    gols_entre,
     html_ao_vivo,
     linha_placar,
     minuto_final,
     passos,
     quadro,
     relogio,
+    tem_gol_recente,
     total_de_jogos,
     ultimo_gol,
 )
@@ -121,3 +125,54 @@ def test_engine_guarda_os_gols_com_minuto():
 def test_velocidades_disponiveis():
     assert VELOCIDADES
     assert all(segundos > 0 for segundos in VELOCIDADES.values())
+
+
+def test_gols_entre_pega_so_o_intervalo_do_quadro():
+    partida = _partida_com_gols("FLA", "PAL", [(3, "FLA"), (4, "PAL"), (9, "FLA")])
+    placares = {"Série A": [partida]}
+
+    # o quadro vai de 3' para 6': entra o gol do 4', não o do 3' (já contado)
+    assert [g.minuto for g in gols_entre(placares, 3, 6)] == [4]
+    # do apito inicial até o 3' entra o gol do minuto 3
+    assert [g.minuto for g in gols_entre(placares, 0, 3)] == [3]
+    # intervalo de verdade vazio
+    assert gols_entre(placares, 4, 4) == []
+    assert [g.minuto for g in gols_entre(placares, 6, 9)] == [9]
+    assert gols_entre(placares, 9, 12) == []
+
+
+def test_gol_recente_mantem_o_lance_aceso_por_alguns_minutos():
+    partida = _partida_com_gols("FLA", "PAL", [(30, "FLA")])
+    assert gol_recente(partida, 29) is False
+    assert gol_recente(partida, 30) is True
+    assert gol_recente(partida, 30 + JANELA_FLASH) is True
+    assert gol_recente(partida, 30 + JANELA_FLASH + 1) is False
+
+    placares = {"Série A": [partida]}
+    assert tem_gol_recente(placares, 31) is True
+    assert tem_gol_recente(placares, 60) is False
+
+
+def test_linha_de_placar_pisca_quando_saiu_gol():
+    partida = _partida_com_gols("FLA", "PAL", [(12, "FLA")])
+    com_gol = linha_placar(partida, 1, 0, gol=True)
+    sem_gol = linha_placar(partida, 1, 0, gol=False)
+    assert "gol-agora" in com_gol
+    assert "gol-agora" not in sem_gol
+
+
+def test_html_ao_vivo_pisca_e_toca_no_minuto_do_gol():
+    minha = _partida_com_gols("FLA", "PAL", [(20, "FLA")])
+    outra = _partida_com_gols("VAS", "FLU", [(70, "FLU")])
+    placares = {"Série A": [minha, outra]}
+    som = "data:audio/wav;base64,AAAA"
+
+    html = html_ao_vivo(placares, 21, meu_time="FLA", rodada=1, som=som)
+    assert "gol-agora" in html  # minha partida marcou aos 20'
+    assert "<audio" in html and "autoplay" in html
+    assert "GOOOL!" in html
+
+    # sem gol recente: sem pisca; e o chamador não passa som (senão tocaria à toa)
+    parado = html_ao_vivo(placares, 50, meu_time="FLA", rodada=1)
+    assert "gol-agora" not in parado
+    assert "<audio" not in parado

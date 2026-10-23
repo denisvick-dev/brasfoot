@@ -10,6 +10,7 @@ cada minuto sem precisar abrir a interface.
 """
 
 from game.modelos import Gol, Partida
+from ui.sons import caixa_de_som
 
 #: Duração total do relógio, em segundos, por opção de velocidade.
 VELOCIDADES: dict[str, float] = {
@@ -25,6 +26,9 @@ PASSO_MINUTOS = 3
 
 #: Fim do tempo regulamentar; o que passar disso vira acréscimo ("90+2'").
 MINUTO_REGULAMENTAR = 90
+
+#: Por quantos minutos de jogo o gol continua piscando em vermelho na tela.
+JANELA_FLASH = 3
 
 
 def minuto_final(placares: dict[str, list[Partida]]) -> int:
@@ -81,6 +85,37 @@ def gols_do_minuto(placares: dict[str, list[Partida]], minuto: int) -> list[Gol]
     ]
 
 
+def gols_entre(placares: dict[str, list[Partida]], inicio: int, fim: int) -> list[Gol]:
+    """Gols marcados no intervalo `(inicio, fim]` — um "quadro" da animação."""
+    return [
+        gol
+        for partidas in placares.values()
+        for partida in partidas
+        for gol in partida.gols
+        if inicio < gol.minuto <= fim
+    ]
+
+
+def gol_recente(partida: Partida, minuto: int, janela: int = JANELA_FLASH) -> bool:
+    """True se a partida marcou gol nos últimos `janela` minutos de jogo.
+
+    A janela é inclusiva (`minuto - janela <= gol <= minuto`) para o lance ficar
+    aceso também no quadro seguinte ao gol.
+    """
+    return any(minuto - janela <= gol.minuto <= minuto for gol in partida.gols)
+
+
+def tem_gol_recente(
+    placares: dict[str, list[Partida]], minuto: int, janela: int = JANELA_FLASH
+) -> bool:
+    """True se algum jogo da rodada marcou gol agora (liga o pisca do painel)."""
+    return any(
+        gol_recente(partida, minuto, janela)
+        for partidas in placares.values()
+        for partida in partidas
+    )
+
+
 def ultimo_gol(partida: Partida, minuto: int) -> Gol | None:
     """Gol mais recente da partida até o minuto (None se ainda não teve)."""
     gols = partida.gols_ate(minuto)
@@ -91,9 +126,20 @@ def total_de_jogos(placares: dict[str, list[Partida]]) -> int:
     return sum(len(partidas) for partidas in placares.values())
 
 
-def linha_placar(partida: Partida, casa: int, fora: int, destaque: bool = False) -> str:
+def linha_placar(
+    partida: Partida,
+    casa: int,
+    fora: int,
+    destaque: bool = False,
+    gol: bool = False,
+) -> str:
     """Uma linha de placar parcial (reaproveita o CSS `.placar-linha`)."""
-    classe = "placar-linha destaque" if destaque else "placar-linha"
+    classes = ["placar-linha"]
+    if destaque:
+        classes.append("destaque")
+    if gol:
+        classes.append("gol-agora")
+    classe = " ".join(classes)
     return (
         f"<div class='{classe}'>"
         f"<span class='pc-time'>{partida.time_casa}</span>"
@@ -111,13 +157,21 @@ def html_ao_vivo(
     rodada: int = 0,
     sorteio: int | None = None,
     final: int | None = None,
+    som: str = "",
 ) -> str:
-    """Painel da rodada em andamento: relógio, jogo do clube e demais jogos."""
+    """Painel da rodada em andamento: relógio, jogo do clube e demais jogos.
+
+    `som` é o data URI do WAV de gol: quando vem preenchido (o chamador só
+    preenche no quadro em que saiu gol), o painel toca o som e pisca em vermelho.
+    """
     final = minuto_final(placares) if final is None else final
+    piscando = tem_gol_recente(placares, minuto)
     chip = f"<span class='av-chip'>🎲 Sorteio #{sorteio:06x}</span>" if sorteio else ""
     kicker = f"Rodada {rodada} · {total_de_jogos(placares)} jogos" if rodada else ""
+    bipe = caixa_de_som(som, minuto)
     partes = [
-        "<div class='ao-vivo'>",
+        bipe,
+        f"<div class='ao-vivo{' gol-agora' if piscando else ''}'>",
         "<div class='av-topo'>",
         f"<span class='av-relogio'>{relogio(minuto)}</span>",
         f"<span class='av-legenda'>{kicker}</span>",
@@ -147,14 +201,17 @@ def _jogo_do_clube(
                 continue
             casa, fora = partida.placar_ate(minuto)
             gol = ultimo_gol(partida, minuto)
+            agora = gol_recente(partida, minuto)
             evento = (
                 f"⚽ {gol.minuto}' {gol.jogador}"
                 + (f" (assist: {gol.assistencia})" if gol.assistencia else "")
                 if gol
                 else "⏳ Bola rolando..."
             )
+            if agora:
+                evento = f"⚽ <b>GOOOL!</b> {evento}"
             return (
-                "<div class='av-destaque'>"
+                f"<div class='av-destaque{' gol-agora' if agora else ''}'>"
                 f"<div class='av-placar'>{casa}<i>x</i>{fora}</div>"
                 f"<div class='av-times'>{partida.time_casa} · {partida.time_fora}</div>"
                 f"<div class='av-evento'>{evento}</div>"
@@ -174,7 +231,9 @@ def _blocos(
             if meu_time and meu_time in (partida.time_casa, partida.time_fora):
                 continue
             casa, fora = partida.placar_ate(minuto)
-            linhas.append(linha_placar(partida, casa, fora))
+            linhas.append(
+                linha_placar(partida, casa, fora, gol=gol_recente(partida, minuto))
+            )
         if linhas:
             blocos.append(
                 f"<div class='placar-bloco'><h4>{rotulo}"

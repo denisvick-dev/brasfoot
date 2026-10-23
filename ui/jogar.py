@@ -16,6 +16,7 @@ from game.modelos import Partida, Time
 from ui.ao_vivo import (
     VELOCIDADE_PADRAO,
     VELOCIDADES,
+    gols_entre,
     html_ao_vivo,
     minuto_final,
     passos,
@@ -36,6 +37,7 @@ from ui.apoio import (
     time_por_nome,
     total_rodadas_de,
 )
+from ui.sons import som_gol_uri
 
 
 def tela_jogar():
@@ -136,7 +138,7 @@ def tela_jogar():
         )
 
     st.markdown("<div style='height:.6rem'></div>", unsafe_allow_html=True)
-    col_vel, col_btn = st.columns([1.3, 1])
+    col_vel, col_som, col_btn = st.columns([1.4, 0.9, 1])
     with col_vel:
         velocidade = st.radio(
             "⏱️ Relógio da rodada",
@@ -146,6 +148,15 @@ def tela_jogar():
             key="velocidade_rodada",
             help="Quanto tempo o relógio leva para ir de 0' a 90'. "
             "Cada simulação sorteia resultados novos.",
+        )
+    with col_som:
+        som_ligado = st.checkbox(
+            "🔊 Som de gol",
+            value=True,
+            key="som_de_gol",
+            help="Toca a torcida e destaca o gol em vermelho no momento do lance. "
+            "Se o navegador bloquear o áudio, clique em ⚽ SIMULAR RODADA "
+            "de novo (o clique libera o som).",
         )
     with col_btn:
         st.markdown("<div style='height:1.55rem'></div>", unsafe_allow_html=True)
@@ -206,6 +217,7 @@ def tela_jogar():
             time,
             rodada_global,
             velocidade,
+            som_ligado=som_ligado,
         )
         st.rerun()
 
@@ -542,11 +554,14 @@ def _rodar_relogio(
     time: Time,
     rodada: int,
     velocidade: str,
+    som_ligado: bool = True,
 ) -> None:
     """Passa o relógio de 0' ao último minuto, com barra de progresso.
 
     Os jogos já foram simulados (é instantâneo); aqui só *revelamos* o placar de
     cada partida conforme o minuto, do jeito que o Brasfoot faz na tela de jogo.
+    Quando sai gol no quadro, o lance pisca em vermelho e (se o som estiver
+    ligado) toca o efeito de gol.
     """
     segundos = VELOCIDADES.get(velocidade, VELOCIDADES[VELOCIDADE_PADRAO])
     final = minuto_final(placares)
@@ -556,14 +571,17 @@ def _rodar_relogio(
     marcos = passos(final)
     atraso = segundos / max(1, len(marcos))
     sorteio = st.session_state.get("sorteio_rodada")
+    som = som_gol_uri() if som_ligado else ""
 
     barra = st.progress(0.0, text=f"⏱️ {relogio(0)} · rodada {rodada}")
     painel = st.empty()
+    anterior = 0
     for minuto in marcos:
         barra.progress(
             min(1.0, minuto / final),
             text=f"⏱️ {relogio(minuto)} · rodada {rodada}",
         )
+        saiu_gol = bool(gols_entre(placares, anterior, minuto))
         painel.markdown(
             html_ao_vivo(
                 placares,
@@ -572,10 +590,14 @@ def _rodar_relogio(
                 rodada=rodada,
                 sorteio=sorteio,
                 final=final,
+                som=som if saiu_gol else "",
             ),
             unsafe_allow_html=True,
         )
-        _time.sleep(atraso)
+        anterior = minuto
+        # Quadro de gol fica um instante a mais na tela: dá tempo de ver o
+        # pisca vermelho e ouvir o som (na velocidade Rápida os quadros voam).
+        _time.sleep(atraso + (0.45 if saiu_gol else 0.0))
 
     barra.progress(1.0, text="✅ Rodada encerrada — confira os placares abaixo")
     painel.markdown(

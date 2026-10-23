@@ -719,6 +719,51 @@ hr{ border-color:var(--line); }
     background:rgba(22,163,74,.10);
     font-weight:700;
 }
+
+/* ---------- gol: pisca em vermelho no momento do lance ---------- */
+@keyframes golPisca{
+    0%,100%{ background:rgba(220,38,38,.10); box-shadow:0 0 0 0 rgba(220,38,38,.0); }
+    50%{ background:rgba(220,38,38,.42); box-shadow:0 0 0 3px rgba(220,38,38,.38); }
+}
+@keyframes golPulso{
+    0%,100%{ transform:scale(1);    color:#FFFFFF; }
+    50%{ transform:scale(1.06);     color:#FCA5A5; }
+}
+@keyframes golBorda{
+    0%,100%{ border-color:rgba(255,255,255,.10); }
+    50%{ border-color:#EF4444; }
+}
+.placar-linha.gol-agora{
+    animation:golPisca .62s ease-in-out infinite;
+    color:#FFFFFF;
+    font-weight:800;
+}
+.placar-linha.gol-agora .pc-score{
+    background:#DC2626;
+    border-color:#FCA5A5;
+    color:#FFFFFF;
+}
+.av-destaque.gol-agora{
+    animation:golPisca .62s ease-in-out infinite;
+    border-color:#EF4444;
+}
+.av-destaque.gol-agora .av-placar{
+    animation:golPulso .62s ease-in-out infinite;
+}
+.av-destaque.gol-agora .av-evento{
+    color:#FECACA;
+    font-weight:700;
+}
+.ao-vivo.gol-agora{
+    animation:golBorda .8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce){
+    .placar-linha.gol-agora,
+    .av-destaque.gol-agora,
+    .av-destaque.gol-agora .av-placar,
+    .ao-vivo.gol-agora{ animation:none; }
+    .placar-linha.gol-agora{ background:rgba(220,38,38,.35); }
+}
 </style>
 """,
         unsafe_allow_html=True,
