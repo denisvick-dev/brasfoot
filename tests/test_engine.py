@@ -72,3 +72,16 @@ def test_cartoes_suspendem_jogador(times8):
         for jogador in time.jogadores:
             esperado = jogador.cartoes_amarelos >= 3 or jogador.cartoes_vermelhos > 0
             assert jogador.suspenso == esperado, jogador.nome
+
+
+def test_placar_sorteia_resultados_diferentes(times8):
+    """Aleatoriedade: o mesmo confronto não dá sempre o mesmo placar.
+
+    (Se algum dia alguém semear o `random` global no jogo, este teste cai.)
+    """
+    engine = MatchEngine()
+    placares = set()
+    for _ in range(20):
+        partida = engine.simular(times8[0], times8[1], rodada=1)
+        placares.add((partida.gols_casa, partida.gols_fora))
+    assert len(placares) > 1, f"20 jogos deram sempre o mesmo placar: {placares}"

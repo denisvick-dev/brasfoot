@@ -278,6 +278,21 @@ class Time:
 
 
 @dataclass
+class Gol:
+    """Um gol da partida — usado pelo replay ao vivo (relógio andando)."""
+
+    minuto: int
+    time: str  # nome do clube que marcou
+    jogador: str
+    assistencia: str = ""
+
+    @property
+    def descricao(self) -> str:
+        extra = f" (assist: {self.assistencia})" if self.assistencia else ""
+        return f"{self.minuto}' {self.jogador}{extra}"
+
+
+@dataclass
 class Partida:
     """Resultado de uma partida."""
 
@@ -292,10 +307,28 @@ class Partida:
     # usados pelas competições personalizadas (fase / grupo ou chave)
     fase: str = ""
     grupo: str = ""
+    # gols com minuto, para a tela conseguir "rejogar" a partida com relógio
+    gols: list[Gol] = field(default_factory=list)
 
     @property
     def resultado_str(self) -> str:
         return f"{self.time_casa} {self.gols_casa} x {self.gols_fora} {self.time_fora}"
+
+    def placar_ate(self, minuto: int) -> tuple[int, int]:
+        """Placar do jogo considerando só os gols até `minuto` (inclusive)."""
+        casa = sum(
+            1 for g in self.gols if g.minuto <= minuto and g.time == self.time_casa
+        )
+        fora = sum(
+            1 for g in self.gols if g.minuto <= minuto and g.time == self.time_fora
+        )
+        return casa, fora
+
+    def gols_ate(self, minuto: int) -> list[Gol]:
+        """Gols até `minuto` (inclusive), em ordem de minuto."""
+        return sorted(
+            (g for g in self.gols if g.minuto <= minuto), key=lambda g: g.minuto
+        )
 
 
 @dataclass

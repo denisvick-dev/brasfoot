@@ -4,10 +4,11 @@
 
 - `ui/` — interface Streamlit (uma tela por módulo; `estilos.py` tem o tema,
   `apoio.py` as funções compartilhadas e a barra de status). `ui/jogar.py`
-  simula a rodada com barra de progresso (`Piramide.simular_rodada(progresso=…)`)
-  e monta o quadro com os placares de todas as competições da rodada.
+  simula a rodada com barra de progresso (`Piramide.simular_rodada(progresso=…)`),
+  roda o relógio com `ui/ao_vivo.py` (0' a 90'+, com barra e placares aparecendo
+  aos poucos) e depois monta o quadro com os placares de todas as competições.
 - `game/` — simulação, sem Streamlit:
-  - `modelos.py` (Jogador, Time, Partida, Noticia)
+  - `modelos.py` (Jogador, Time, Partida, Gol, Noticia)
   - `jogo_engine.py` (motor da partida)
   - `campeonato.py` / `divisao.py` / `copa.py` / `regional.py` / `piramide.py`
     (competições e temporada)

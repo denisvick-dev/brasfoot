@@ -72,3 +72,18 @@ Para recalibrar, altere a constante e rode `python diagnostico.py`.
   negativo; é o comportamento esperado da régua econômica atual.
 - `is_player_home` / `is_player_away` continuam sem uso dentro de `simular()` —
   ficaram disponíveis para a interface (narração, escalação do jogador).
+
+## Gols com minuto (replay)
+
+Cada `Partida` guarda a lista `gols` (`Gol(minuto, time, jogador, assistencia)`),
+preenchida no mesmo ponto em que o placar é incrementado. Com ela a interface
+consegue "rejogar" o jogo com relógio, sem precisar simular de novo:
+
+```python
+partida.placar_ate(63)   # (2, 1) — quantos gols já tinham saído até o 63'
+partida.gols_ate(63)     # lista de Gol até o minuto
+```
+
+`ui/ao_vivo.py` usa isso para desenhar o painel do relógio (0' a 90'+), e o
+número do `Sorteio #` mostrado na tela é a semente usada pelo motor naquela
+rodada — então ele reproduz exatamente a mesma rodada se você precisar.
