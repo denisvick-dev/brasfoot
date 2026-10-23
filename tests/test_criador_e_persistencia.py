@@ -26,7 +26,9 @@ def test_criar_clube_valida_entradas():
 
 
 def test_criar_clube_monta_elenco_e_ficha():
-    time = criar_clube("Clube Teste", "CTE", tamanho_elenco=18, forca_min=50, forca_max=60)
+    time = criar_clube(
+        "Clube Teste", "CTE", tamanho_elenco=18, forca_min=50, forca_max=60
+    )
     assert time.sigla == "CTE"
     assert len(time.jogadores) == 18
     assert time.origem == "custom"

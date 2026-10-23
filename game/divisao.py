@@ -99,7 +99,9 @@ class Fase:
 # ============================================================
 # Helpers de calendário
 # ============================================================
-def _round_robin(nomes: list[str], ida_e_volta: bool = False) -> list[list[tuple[str, str]]]:
+def _round_robin(
+    nomes: list[str], ida_e_volta: bool = False
+) -> list[list[tuple[str, str]]]:
     """Rodadas de um todos-contra-todos (método do círculo)."""
     times = list(nomes)
     valor_bye = None
@@ -162,7 +164,9 @@ def _fase_grupos(
     )
 
 
-def _fase_mata(nome: str, pares: list[tuple[str, str]], ida_e_volta: bool = True) -> Fase:
+def _fase_mata(
+    nome: str, pares: list[tuple[str, str]], ida_e_volta: bool = True
+) -> Fase:
     """Fase eliminatória: uma rodada de ida e uma de volta."""
     rodadas = [[(nome, casa, fora) for casa, fora in pares]]
     if ida_e_volta:
@@ -252,9 +256,7 @@ class TemporadaDivisao:
                 _distribuir_grupos(ordem, n_grupos),
                 ida_e_volta=False,
             )
-        return _fase_pontos(
-            "Primeira fase", self.times, ida_e_volta=False
-        )
+        return _fase_pontos("Primeira fase", self.times, ida_e_volta=False)
 
     def _planejar_rodadas(self) -> int:
         """Quantas rodadas a temporada terá (as fases futuras já são contadas)."""
@@ -475,7 +477,9 @@ class TemporadaDivisao:
         fase.vencedores = vencedores
         # Série D: quem chega à semifinal sobe para a Série C
         if self.divisao == "D" and fase.nome == "Semifinal":
-            self._promovidos = [self._por_nome[nome] for par in fase.pares for nome in par]
+            self._promovidos = [
+                self._por_nome[nome] for par in fase.pares for nome in par
+            ]
         if fase.nome == "Final" and vencedores:
             self.campeao = vencedores[0]
 
@@ -535,15 +539,15 @@ class TemporadaDivisao:
             )
 
     # ---- consultas --------------------------------------------------
-    def tabela(
-        self, fase: Fase | None = None, grupo: str | None = None
-    ) -> list[dict]:
+    def tabela(self, fase: Fase | None = None, grupo: str | None = None) -> list[dict]:
         """Classificação de uma fase (ou de um grupo) da temporada."""
         fase = fase or self.fases[0]
         if fase.tipo == "mata":
             return []
         clubes = (
-            fase.grupos.get(grupo, []) if grupo else [t for g in fase.grupos.values() for t in g]
+            fase.grupos.get(grupo, [])
+            if grupo
+            else [t for g in fase.grupos.values() for t in g]
         )
         dados: dict[str, dict] = {
             t.nome: {

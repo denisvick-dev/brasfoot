@@ -1,6 +1,7 @@
 """
 Funções de apoio: leitura do estado do jogo, formatação e tabelas.
 """
+
 import datetime as dt
 
 import streamlit as st
@@ -127,9 +128,7 @@ def barra_energia(valor: int) -> str:
 def secao(titulo: str, kicker: str = ""):
     """Título de seção padronizado."""
     k = f'<span class="kicker">{kicker}</span>' if kicker else ""
-    st.markdown(
-        f'<div class="sec-title">{k}{titulo}</div>', unsafe_allow_html=True
-    )
+    st.markdown(f'<div class="sec-title">{k}{titulo}</div>', unsafe_allow_html=True)
 
 
 def stat_card(titulo: str, valor, cor: str = "#16A34A"):
@@ -271,10 +270,14 @@ def confrontos_da_rodada(
     league = st.session_state.get("league")
     if league is None:
         return []
-    partidas = {p.time_casa + "|" + p.time_fora: p for p in league.resultados.get(rodada, [])}
+    partidas = {
+        p.time_casa + "|" + p.time_fora: p for p in league.resultados.get(rodada, [])
+    }
     return [
         (casa, fora, partidas.get(f"{casa}|{fora}"))
-        for casa, fora in (league.calendario[rodada - 1] if rodada <= len(league.calendario) else [])
+        for casa, fora in (
+            league.calendario[rodada - 1] if rodada <= len(league.calendario) else []
+        )
     ]
 
 
@@ -309,7 +312,9 @@ def data_da_rodada(divisao: str, rodada: int) -> dt.date:
     """Data (fictícia, semanal) de uma rodada — a temporada começa nos regionais."""
     piramide = get_piramide()
     league = st.session_state.get("league")
-    temporada = piramide.temporada if piramide else (league.temporada if league else 2026)
+    temporada = (
+        piramide.temporada if piramide else (league.temporada if league else 2026)
+    )
     deslocamento = piramide.rodadas_regionais if piramide is not None else 0
     return data_semana(rodada + deslocamento, temporada)
 
@@ -346,7 +351,9 @@ def zona_da_posicao(divisao: str, pos: int, total: int) -> tuple[str, str]:
     return "#CBD5E1", "Meio de tabela"
 
 
-def linhas_classificacao(divisao: str, fase_idx: int = 0, grupo: str | None = None) -> list[dict]:
+def linhas_classificacao(
+    divisao: str, fase_idx: int = 0, grupo: str | None = None
+) -> list[dict]:
     """Linhas (com estatísticas da fase) da classificação de uma divisão."""
     piramide = get_piramide()
     if piramide is not None and divisao in piramide.divisoes:
@@ -442,7 +449,8 @@ def legenda_zonas(divisao: str) -> str:
             ("#DC2626", "Rebaixamento (últimos 4)"),
         ]
     spans = " · ".join(
-        f'<span class="zona" style="background:{cor}"></span> {txt}' for cor, txt in itens
+        f'<span class="zona" style="background:{cor}"></span> {txt}'
+        for cor, txt in itens
     )
     return f'<div class="legenda" style="margin-top:.8rem">{spans}</div>'
 
@@ -555,5 +563,3 @@ def _rotulo_competicao(chave: str) -> str:
         if torneio is not None:
             return torneio.nome
     return chave
-
-

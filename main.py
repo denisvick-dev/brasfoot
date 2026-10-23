@@ -60,27 +60,35 @@ def main():
     print(linha())
 
     # Classificação
-    print(f"{'#':>2} {'TIME':<16} {'P':>3} {'J':>3} {'V':>3} {'E':>3} {'D':>3} "
-          f"{'GP':>4} {'GC':>4} {'SG':>4} {'OVR':>4} {'CAIXA (R$)':>14}")
+    print(
+        f"{'#':>2} {'TIME':<16} {'P':>3} {'J':>3} {'V':>3} {'E':>3} {'D':>3} "
+        f"{'GP':>4} {'GC':>4} {'SG':>4} {'OVR':>4} {'CAIXA (R$)':>14}"
+    )
     for i, t in enumerate(liga.classificacao, 1):
         marca = " <<" if t.nome == time_jogador else ""
-        print(f"{i:>2} {t.nome:<16} {t.pontos:>3} {t.jogos_campeonato:>3} "
-              f"{t.vitorias:>3} {t.empates:>3} {t.derrotas:>3} "
-              f"{t.gols_pro:>4} {t.gols_contra:>4} {t.saldo_gols:>4} "
-              f"{t.overall_time:>4} {t.financas:>14,}{marca}")
+        print(
+            f"{i:>2} {t.nome:<16} {t.pontos:>3} {t.jogos_campeonato:>3} "
+            f"{t.vitorias:>3} {t.empates:>3} {t.derrotas:>3} "
+            f"{t.gols_pro:>4} {t.gols_contra:>4} {t.saldo_gols:>4} "
+            f"{t.overall_time:>4} {t.financas:>14,}{marca}"
+        )
 
     print(linha())
     print("Artilharia:")
     for i, (j, sigla) in enumerate(liga.artilharia(10), 1):
-        print(f"  {i:>2}. {j.nome:<22} {sigla}  {j.gols} gols "
-              f"({j.assistencias} assist, {j.jogos} jogos)")
+        print(
+            f"  {i:>2}. {j.nome:<22} {sigla}  {j.gols} gols "
+            f"({j.assistencias} assist, {j.jogos} jogos)"
+        )
 
     mercado = Market(times)
     print(linha())
     print(f"Mercado: {len(mercado.ofertas_disponiveis)} jogadores disponíveis")
     livre = mercado.gerar_jogador_livre()
-    print(f"Jogador livre gerado: {livre.nome} ({livre.posicao}, "
-          f"ovr {livre.overall}, R$ {livre.valor_mercado:,})")
+    print(
+        f"Jogador livre gerado: {livre.nome} ({livre.posicao}, "
+        f"ovr {livre.overall}, R$ {livre.valor_mercado:,})"
+    )
 
     print(linha())
     print(f"Notícias geradas: {len(liga.noticias)}")

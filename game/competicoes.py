@@ -108,7 +108,9 @@ class Fase:
         return len(self.rodadas)
 
 
-def _round_robin(nomes: list[str], ida_e_volta: bool = True) -> list[list[tuple[str, str]]]:
+def _round_robin(
+    nomes: list[str], ida_e_volta: bool = True
+) -> list[list[tuple[str, str]]]:
     """Gera as rodadas de um todos-contra-todos (algoritmo circle method)."""
     times = list(nomes)
     bye = None
@@ -221,7 +223,9 @@ class Campeonato:
         if len(times) < 2:
             raise ValueError("É preciso de ao menos 2 times.")
         if formato not in FORMATOS:
-            raise ValueError(f"Formato inválido: {formato!r}. Use um de {list(FORMATOS)}.")
+            raise ValueError(
+                f"Formato inválido: {formato!r}. Use um de {list(FORMATOS)}."
+            )
         if distribuicao not in DISTRIBUICOES:
             raise ValueError(
                 f"Distribuição inválida: {distribuicao!r}. "
@@ -426,7 +430,9 @@ class Campeonato:
             n += len(self.avancar())
         return n
 
-    def _simular(self, casa: str, fora: str, rodada: int, fase: str, grupo: str) -> Partida:
+    def _simular(
+        self, casa: str, fora: str, rodada: int, fase: str, grupo: str
+    ) -> Partida:
         t_casa, t_fora = self._por_nome[casa], self._por_nome[fora]
         partida = self.engine.simular(t_casa, t_fora, rodada)
         partida.fase = fase
@@ -450,7 +456,11 @@ class Campeonato:
 
     def _concluir_grupos(self, fase: Fase):
         fase.concluida = True
-        proxima = self.fases[self.fase_idx + 1] if self.fase_idx + 1 < len(self.fases) else None
+        proxima = (
+            self.fases[self.fase_idx + 1]
+            if self.fase_idx + 1 < len(self.fases)
+            else None
+        )
         if proxima is None:
             tabela = self.tabela(fase)
             self.campeao = tabela[0]["time"] if tabela else None
@@ -494,7 +504,11 @@ class Campeonato:
                 self.terceiro = Confronto(a=perdedores[0], b=perdedores[1])
 
         fase.concluida = True
-        proxima = self.fases[self.fase_idx + 1] if self.fase_idx + 1 < len(self.fases) else None
+        proxima = (
+            self.fases[self.fase_idx + 1]
+            if self.fase_idx + 1 < len(self.fases)
+            else None
+        )
         if proxima is None:
             self.campeao = fase.confrontos[0].vencedor
             jogos.extend(self._jogar_terceiro_lugar(fase))
@@ -508,7 +522,12 @@ class Campeonato:
     def _jogar_terceiro_lugar(self, fase: Fase) -> list[Partida]:
         """Disputa de 3º lugar (jogo único), se as duas semifinais aconteceram."""
         terceiro = self.terceiro
-        if terceiro is None or terceiro.jogos or terceiro.a is None or terceiro.b is None:
+        if (
+            terceiro is None
+            or terceiro.jogos
+            or terceiro.a is None
+            or terceiro.b is None
+        ):
             return []
         jogo = self._simular(
             terceiro.a.nome, terceiro.b.nome, 1, "Disputa de 3º lugar", ""
@@ -576,9 +595,7 @@ class Campeonato:
             times = [t for g in fase.grupos.values() for t in g]
 
         dados: dict[str, LinhaTabela] = {
-            t.nome: LinhaTabela(
-                time=t, pts=0, j=0, v=0, e=0, d=0, gp=0, gc=0, sg=0
-            )
+            t.nome: LinhaTabela(time=t, pts=0, j=0, v=0, e=0, d=0, gp=0, gc=0, sg=0)
             for t in times
         }
 
@@ -671,7 +688,9 @@ class Campeonato:
                 for ci, confronto in enumerate(fase.confrontos):
                     for oi, p in enumerate(confronto.jogos):
                         resultados.append(
-                            self._partida_para_dict(p, fi, grupo="", confronto=ci, ordem=oi)
+                            self._partida_para_dict(
+                                p, fi, grupo="", confronto=ci, ordem=oi
+                            )
                         )
             else:
                 for p in fase.jogos:
@@ -721,9 +740,7 @@ class Campeonato:
                     "ida_e_volta": f.ida_e_volta,
                     "concluida": f.concluida,
                     "rodada_atual": f.rodada_atual,
-                    "grupos": {
-                        g: [t.nome for t in ts] for g, ts in f.grupos.items()
-                    },
+                    "grupos": {g: [t.nome for t in ts] for g, ts in f.grupos.items()},
                     "confrontos": [
                         [
                             c.a.nome if c.a else None,
@@ -835,9 +852,7 @@ class Campeonato:
                 a=resolver(terceiro["a"]) if terceiro.get("a") else None,
                 b=resolver(terceiro["b"]) if terceiro.get("b") else None,
                 vencedor=(
-                    resolver(terceiro["vencedor"])
-                    if terceiro.get("vencedor")
-                    else None
+                    resolver(terceiro["vencedor"]) if terceiro.get("vencedor") else None
                 ),
             )
             for rd in terceiro.get("jogos", []):

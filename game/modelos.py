@@ -217,7 +217,9 @@ class Time:
     def valor_elenco(self) -> int:
         return sum(j.valor_mercado for j in self.jogadores)
 
-    def peso_escalacao(self, jogador: Jogador, considerar_energia: bool = True) -> float:
+    def peso_escalacao(
+        self, jogador: Jogador, considerar_energia: bool = True
+    ) -> float:
         """
         Nota usada para escolher os titulares.
 

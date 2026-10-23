@@ -115,9 +115,7 @@ class CopaBrasil:
         self.fases: list[FaseCopa] = [self._primeira_fase(fortes, fracos)]
 
     # ---- montagem ---------------------------------------------------
-    def _primeira_fase(
-        self, fortes: list[Time], fracos: list[Time]
-    ) -> FaseCopa:
+    def _primeira_fase(self, fortes: list[Time], fracos: list[Time]) -> FaseCopa:
         pares = [
             (forte.nome, fraco.nome)
             for forte, fraco in zip(fortes, fracos, strict=True)
@@ -274,7 +272,9 @@ class CopaBrasil:
         p = max(0.2, min(0.8, p))
         return a if self.rng.random() < p else b
 
-    def _anotar_penaltis(self, fase: FaseCopa, a: Time, b: Time, vencedor: Time) -> None:
+    def _anotar_penaltis(
+        self, fase: FaseCopa, a: Time, b: Time, vencedor: Time
+    ) -> None:
         placar_v, placar_p = (4, 3) if self.rng.random() < 0.7 else (5, 4)
         for partida in reversed(fase.jogos):
             if {a.nome, b.nome} == {partida.time_casa, partida.time_fora}:
@@ -313,9 +313,7 @@ class CopaBrasil:
                 return partida
         return None
 
-    def jogos_do_time(
-        self, nome: str
-    ) -> list[tuple[int, str, str, Partida | None]]:
+    def jogos_do_time(self, nome: str) -> list[tuple[int, str, str, Partida | None]]:
         """Jogos do clube na copa: ``(rodada, casa, fora, partida)``."""
         jogos: list[tuple[int, str, str, Partida | None]] = []
         for fase in self.fases:

@@ -9,7 +9,9 @@ from game.clubes import TIMES_DATA
 
 def test_banco_tem_156_clubes_em_quatro_divisoes():
     assert len(TIMES_DATA) == 156
-    assert Counter(c.divisao for c in TIMES_DATA) == Counter({"A": 20, "B": 20, "C": 20, "D": 96})
+    assert Counter(c.divisao for c in TIMES_DATA) == Counter(
+        {"A": 20, "B": 20, "C": 20, "D": 96}
+    )
 
 
 def test_siglas_sao_unicas():

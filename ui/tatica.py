@@ -33,9 +33,7 @@ def tela_tatica():
         formacao = st.selectbox(
             "Escolha a formação",
             formacoes,
-            index=formacoes.index(time.formacao)
-            if time.formacao in formacoes
-            else 0,
+            index=formacoes.index(time.formacao) if time.formacao in formacoes else 0,
             label_visibility="collapsed",
         )
         if formacao != time.formacao:
@@ -166,5 +164,3 @@ def _desenhar_campo(time: Time):
     html.append("</div>")
 
     st.markdown("".join(html), unsafe_allow_html=True)
-
-

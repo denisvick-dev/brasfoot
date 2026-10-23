@@ -6,7 +6,12 @@ Todo dinheiro que entra ou sai do clube passa por `game/financas.registrar()`,
 que atualiza `Time.financas` e grava uma linha no extrato do clube:
 
 ```python
-{"rodada": 12, "tipo": "bilheteria", "descricao": "Bilheteria x Vasco (31.204 pagantes)", "valor": 1_972_000}
+{
+    "rodada": 12,
+    "tipo": "bilheteria",
+    "descricao": "Bilheteria x Vasco (31.204 pagantes)",
+    "valor": 1_972_000,
+}
 ```
 
 O extrato guarda os últimos 400 lançamentos (`financas.LIMITE_EXTRATO`) e é uma

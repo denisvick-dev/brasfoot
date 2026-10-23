@@ -49,13 +49,11 @@ def tela_competicao():
             resumo = camp.resumo_final()
             if resumo["promovidos"]:
                 st.success(
-                    "⬆️ Promovidos: "
-                    + ", ".join(t.nome for t in resumo["promovidos"])
+                    "⬆️ Promovidos: " + ", ".join(t.nome for t in resumo["promovidos"])
                 )
             if resumo["rebaixados"]:
                 st.error(
-                    "⬇️ Rebaixados: "
-                    + ", ".join(t.nome for t in resumo["rebaixados"])
+                    "⬇️ Rebaixados: " + ", ".join(t.nome for t in resumo["rebaixados"])
                 )
         if st.button("💾 Salvar resultado"):
             camp.salvar()
@@ -67,7 +65,7 @@ def tela_competicao():
                 f'<div class="stat" style="--accent:#2563EB">'
                 f'<div class="lbl">Fase atual</div>'
                 f'<div class="val" style="font-size:1.3rem;font-family:var(--font-ui)!important">'
-                f'{camp.progresso}</div></div>',
+                f"{camp.progresso}</div></div>",
                 unsafe_allow_html=True,
             )
         with c2:
@@ -100,9 +98,7 @@ def tela_competicao():
                     _html_tabela(camp.tabela(fase, grupo)), unsafe_allow_html=True
                 )
                 if len(grupos) > 1:
-                    st.caption(
-                        f"Classificam-se os {fase.classificados} primeiros"
-                    )
+                    st.caption(f"Classificam-se os {fase.classificados} primeiros")
 
     # ---- mata-mata
     else:
@@ -143,7 +139,7 @@ def tela_competicao():
                 <span style="font-size:1.25rem"><b>{gols_a} x {gols_b}</b></span>
                 <span><b>{escudo_img(b.sigla, b.escudo_emoji)} {b.nome}</b></span>
                 <span class="tag {cls_b}">{b.sigla}</span>
-                <span style="margin-left:auto" class="club-meta">{jogos_txt or 'aguardando'}</span>
+                <span style="margin-left:auto" class="club-meta">{jogos_txt or "aguardando"}</span>
             </div>
             """,
                 unsafe_allow_html=True,
@@ -187,7 +183,7 @@ def tela_competicao():
                 f'<div class="res">⚽ <b>{j.nome}</b> '
                 f'<span class="club-meta">{sigla} · {j.posicao}</span>'
                 f'<span style="margin-left:auto"><b>{j.gols} gols</b> · '
-                f'{j.assistencias} assist</span></div>',
+                f"{j.assistencias} assist</span></div>",
                 unsafe_allow_html=True,
             )
 
@@ -195,5 +191,3 @@ def tela_competicao():
     if st.button("💾 Salvar progresso", use_container_width=True):
         camp.salvar()
         st.success("✅ Progresso salvo!")
-
-

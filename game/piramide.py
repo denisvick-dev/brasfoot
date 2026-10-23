@@ -229,9 +229,7 @@ class Piramide:
         """
         jogos = self._simular_rodada(time_jogador, progresso)
         if not self.encerrada:
-            rotina.entre_rodadas(
-                self.times, self._rodada, self.engine.RODADAS_POR_MES
-            )
+            rotina.entre_rodadas(self.times, self._rodada, self.engine.RODADAS_POR_MES)
         else:
             self.premiar_temporada()
         return jogos
@@ -250,9 +248,7 @@ class Piramide:
             total = max(1, len(self.regionais))
             for indice, torneio in enumerate(self.regionais, start=1):
                 _avisar(progresso, indice / total, torneio.nome)
-                partidas = torneio.simular_rodada_global(
-                    self._rodada, time_jogador
-                )
+                partidas = torneio.simular_rodada_global(self._rodada, time_jogador)
                 if partidas:
                     jogos[torneio.chave] = partidas
             return jogos
@@ -269,9 +265,7 @@ class Piramide:
             if self.copa is not None:
                 feito += 1
                 _avisar(progresso, feito / total, "Copa do Brasil")
-                partidas = self.copa.simular_rodada_global(
-                    self._rodada, time_jogador
-                )
+                partidas = self.copa.simular_rodada_global(self._rodada, time_jogador)
                 if partidas:
                     jogos["COPA"] = partidas
             return jogos
@@ -481,7 +475,9 @@ class Piramide:
     def resultados(self, divisao: str) -> dict[int, list[Partida]]:
         return self.league(divisao).resultados
 
-    def partida(self, divisao: str, rodada: int, casa: str, fora: str) -> Partida | None:
+    def partida(
+        self, divisao: str, rodada: int, casa: str, fora: str
+    ) -> Partida | None:
         """Partida de uma rodada (``None`` se ainda não foi jogada)."""
         return self.league(divisao).partida(rodada, casa, fora)
 

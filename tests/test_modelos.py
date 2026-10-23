@@ -36,7 +36,14 @@ def test_escalacao_respeita_formacao():
     time.formacao = "4-3-3"
     time.jogadores = [
         Jogador(i, f"J{i}", pos, 25, 70, 70, 70, 70, 70, 70)
-        for i, pos in enumerate(["GOL"] + ["ZAG"] * 4 + ["LAT"] * 2 + ["VOL"] * 2 + ["MEI"] * 3 + ["ATA"] * 4)
+        for i, pos in enumerate(
+            ["GOL"]
+            + ["ZAG"] * 4
+            + ["LAT"] * 2
+            + ["VOL"] * 2
+            + ["MEI"] * 3
+            + ["ATA"] * 4
+        )
     ]
     time.auto_escalar()
     assert sum(1 for j in time.titulares if j.posicao == "ATA") == 3

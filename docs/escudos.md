@@ -15,8 +15,9 @@ As siglas são únicas: nenhum clube divide arquivo com outro. Para conferir:
 
 ```python
 from game.escudos import faltando, orfaos
-faltando()   # [] → todo clube do banco tem escudo
-orfaos()     # [] → todo arquivo corresponde a um clube
+
+faltando()  # [] → todo clube do banco tem escudo
+orfaos()  # [] → todo arquivo corresponde a um clube
 ```
 
 | Origem | Clubes |
@@ -42,8 +43,9 @@ python scripts/gerar_escudos.py --forcar   # refaz só os genéricos
 
 ```python
 from game.escudos import imagem, tem_escudo
-imagem("FLA", "🔴⚫")     # <img class="escudo" src="data:image/png;base64,…">
-tem_escudo("FLA")         # True
+
+imagem("FLA", "🔴⚫")  # <img class="escudo" src="data:image/png;base64,…">
+tem_escudo("FLA")  # True
 ```
 
 Clube sem imagem (por exemplo, criado pelo jogador) cai no emoji de sempre.

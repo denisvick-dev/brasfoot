@@ -113,5 +113,3 @@ def _mostrar_jogadores_tabela(jogadores: list[Jogador]):
         "</tr></thead><tbody>" + "".join(linhas) + "</tbody></table>",
         unsafe_allow_html=True,
     )
-
-

@@ -46,7 +46,22 @@ PERFIS: dict[str, dict[str, tuple[int, int]]] = {
     "Veterano (33-38)": {"idade": (33, 38), "base": (48, 68)},
 }
 
-ESCUDOS = ["⚽", "🔴", "🔵", "🟢", "🟡", "🟣", "🟠", "⚫", "⚪", "🦅", "🦁", "🐯", "🐺", "⭐"]
+ESCUDOS = [
+    "⚽",
+    "🔴",
+    "🔵",
+    "🟢",
+    "🟡",
+    "🟣",
+    "🟠",
+    "⚫",
+    "⚪",
+    "🦅",
+    "🦁",
+    "🐯",
+    "🐺",
+    "⭐",
+]
 
 
 # ============================================================
@@ -144,7 +159,9 @@ def _ajustar_elenco(elenco: list[Jogador], tamanho: int) -> list[Jogador]:
 
     if len(elenco) > tamanho:
         gols = sorted(
-            [j for j in elenco if j.posicao == "GOL"], key=lambda j: j.overall, reverse=True
+            [j for j in elenco if j.posicao == "GOL"],
+            key=lambda j: j.overall,
+            reverse=True,
         )[:2]
         restantes = sorted(
             [j for j in elenco if all(j is not g for g in gols)],

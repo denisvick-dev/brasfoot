@@ -28,12 +28,18 @@ mata-mata..."), e os limites se ajustam ao número de times escolhido.
 from game.competicoes import Campeonato
 
 camp = Campeonato(
-    "Copa Aurora", times, formato="grupos_mata",
-    times_por_grupo=5, classificados_por_grupo=2,
-    ida_e_volta=True, ida_e_volta_mata=False,
-    distribuicao="forca", terceiro_lugar=True,
-    final_unica=True, semente=42,
+    "Copa Aurora",
+    times,
+    formato="grupos_mata",
+    times_por_grupo=5,
+    classificados_por_grupo=2,
+    ida_e_volta=True,
+    ida_e_volta_mata=False,
+    distribuicao="forca",
+    terceiro_lugar=True,
+    final_unica=True,
+    semente=42,
 )
 camp.simular_tudo()
-camp.jogo_terceiro_lugar        # Partida da disputa de 3º lugar
+camp.jogo_terceiro_lugar  # Partida da disputa de 3º lugar
 ```

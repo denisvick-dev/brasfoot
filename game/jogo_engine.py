@@ -33,15 +33,15 @@ class MatchEngine:
         "falta": 14,
         "escanteio": 20,
     }
-    CONVERSAO = 0.74              # × ataque/(ataque+defesa) => ~0,37 se equilibrado
+    CONVERSAO = 0.74  # × ataque/(ataque+defesa) => ~0,37 se equilibrado
     PROB_GOL_MIN = 0.05
     PROB_GOL_MAX = 0.85
 
     BONUS_CASA_ATAQUE = 11.0
     BONUS_CASA_DEFESA = 5.0
-    BONUS_CASA_GERAL = 11.0   # usado na força geral (posse/volume de jogo)
-    PESO_TATICA_ATAQUE = 0.22     # (tatica - 50) * peso
-    PESO_TATICA_DEFESA = 0.18     # atacar mais = defender pior
+    BONUS_CASA_GERAL = 11.0  # usado na força geral (posse/volume de jogo)
+    PESO_TATICA_ATAQUE = 0.22  # (tatica - 50) * peso
+    PESO_TATICA_DEFESA = 0.18  # atacar mais = defender pior
 
     DESGASTE_MIN, DESGASTE_MAX = 20, 35
     RECUPERACAO_MIN, RECUPERACAO_MAX = 12, 26
@@ -49,7 +49,7 @@ class MatchEngine:
 
     INGRESSO_MIN, INGRESSO_MAX = 40, 90
     COTA_TV_POR_TORCEDOR = 12_000  # renda fixa do mandante por jogo
-    RODADAS_POR_MES = 6            # salários pagos a cada 6 rodadas
+    RODADAS_POR_MES = 6  # salários pagos a cada 6 rodadas
 
     def simular(
         self,
@@ -246,9 +246,7 @@ class MatchEngine:
 
         return None
 
-    def _evento_gol(
-        self, minuto: int, time_atk: Time, partida: Partida
-    ) -> str | None:
+    def _evento_gol(self, minuto: int, time_atk: Time, partida: Partida) -> str | None:
         """Processa um evento de gol."""
         # Chance real de gol baseada na força
         atacantes = [
@@ -331,7 +329,9 @@ class MatchEngine:
             time_casa,
             partida.rodada,
             "bilheteria",
-            f"Bilheteria x {time_fora.nome} ({partida.publico:,} pagantes)".replace(",", "."),
+            f"Bilheteria x {time_fora.nome} ({partida.publico:,} pagantes)".replace(
+                ",", "."
+            ),
             bilheteria,
         )
         financas.registrar(

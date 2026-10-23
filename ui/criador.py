@@ -73,7 +73,9 @@ def tela_criador():
 
             c9, c10 = st.columns(2)
             estadio = c9.text_input("Estádio", placeholder="Arena Aurora")
-            capacidade = c10.number_input("Capacidade", 1_000, 120_000, 30_000, step=1_000)
+            capacidade = c10.number_input(
+                "Capacidade", 1_000, 120_000, 30_000, step=1_000
+            )
 
             faixa = st.slider("Força do elenco (mínimo → máximo)", 30, 95, (50, 72))
 
@@ -138,7 +140,7 @@ def tela_criador():
                             {escudo_img(clube.sigla, clube.escudo_emoji, "escudo-crest")}
                         </div>
                         <div class="club-name">{clube.nome} ({clube.sigla})</div>
-                        <div class="club-meta">📍 {clube.cidade}/{clube.estado or '—'} ·
+                        <div class="club-meta">📍 {clube.cidade}/{clube.estado or "—"} ·
                             fundado em {clube.fundacao}</div>
                         <div class="kv"><span>Estádio</span><b>{clube.estadio}</b></div>
                         <div class="kv"><span>Capacidade</span><b>{clube.capacidade:,}</b></div>
@@ -155,12 +157,12 @@ def tela_criador():
                 st.metric("⭐ Overall", clube.overall_time)
                 st.metric("⚔️ Ataque", clube.forca_ataque)
                 st.metric("🛡️ Defesa", clube.forca_defesa)
-                if st.button("💾 Salvar clube", use_container_width=True, type="primary"):
+                if st.button(
+                    "💾 Salvar clube", use_container_width=True, type="primary"
+                ):
                     slug = salvar_clube(clube)
                     st.success(f"✅ {clube.nome} salvo como `{slug}`")
-                if st.button(
-                    "🎮 Usar no próximo jogo", use_container_width=True
-                ):
+                if st.button("🎮 Usar no próximo jogo", use_container_width=True):
                     st.session_state.setdefault("clubes_custom", [])
                     if clube.nome not in [
                         t.nome for t in st.session_state.clubes_custom
@@ -177,7 +179,9 @@ def tela_criador():
     with tab_jog:
         with st.form("form_jogador"):
             c1, c2, c3 = st.columns([3, 1, 1])
-            nome_j = c1.text_input("Nome", value="", placeholder="Deixe vazio para sortear")
+            nome_j = c1.text_input(
+                "Nome", value="", placeholder="Deixe vazio para sortear"
+            )
             posicao = c2.selectbox("Posição", POSICOES)
             idade = c3.number_input("Idade", 16, 45, 24)
 
@@ -285,9 +289,7 @@ def tela_criador():
         st.markdown(
             '<div class="club-meta">Seleção rápida:</div>', unsafe_allow_html=True
         )
-        por_divisao = {
-            d: [c.nome for c in clubes_por_divisao(d)] for d in DIVISOES
-        }
+        por_divisao = {d: [c.nome for c in clubes_por_divisao(d)] for d in DIVISOES}
         atalhos = st.columns(4)
         if atalhos[0].button(f"Série A ({len(por_divisao['A'])})"):
             st.session_state.sel_times = por_divisao["A"]
@@ -375,7 +377,6 @@ def tela_criador():
                 st.session_state.pagina = "competicao"
                 st.rerun()
 
-
         # ---------------- regras por formato ----------------
         promovidos = rebaixados = 0
         n_grupos, times_por_grupo = 4, 0
@@ -427,13 +428,9 @@ def tela_criador():
             if modo == "Número de grupos":
                 n_grupos = g1.number_input("Número de grupos", 2, 12, 4, step=1)
             else:
-                times_por_grupo = g2.number_input(
-                    "Times por grupo", 2, 48, 5, step=1
-                )
+                times_por_grupo = g2.number_input("Times por grupo", 2, 48, 5, step=1)
                 n_grupos = 4
-            classificados = g1.number_input(
-                "Classificados por grupo", 1, 8, 2, step=1
-            )
+            classificados = g1.number_input("Classificados por grupo", 1, 8, 2, step=1)
             st.caption(
                 f"Com {n_times} times cabem até {lim['grupos']} grupos "
                 f"e até {lim['classificados_por_grupo']} classificados por grupo."
@@ -554,8 +551,10 @@ def tela_criador():
                     unsafe_allow_html=True,
                 )
                 meu_time = get_meu_time()
-                if j is not None and meu_time and c3.button(
-                    "Contratar", key=f"usar_jog_{reg['slug']}"
+                if (
+                    j is not None
+                    and meu_time
+                    and c3.button("Contratar", key=f"usar_jog_{reg['slug']}")
                 ):
                     if len(meu_time.jogadores) >= 30:
                         st.error("❌ Elenco lotado!")
@@ -714,5 +713,3 @@ def _previa_campeonato(
         f"grupos em {'ida e volta' if ida_e_volta else 'turno único'} · "
         f"{sorteio}"
     )
-
-

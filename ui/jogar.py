@@ -192,7 +192,9 @@ def tela_jogar():
         total_jogos = sum(len(partidas) for partidas in placares.values())
         secao(
             "Placares da rodada",
-            f"Rodada {numero} · {total_jogos} jogos" if numero else f"{total_jogos} jogos",
+            f"Rodada {numero} · {total_jogos} jogos"
+            if numero
+            else f"{total_jogos} jogos",
         )
         st.markdown(_html_placares(placares), unsafe_allow_html=True)
 
@@ -237,12 +239,8 @@ def _html_placares(placares: dict[str, list[Partida]]) -> str:
 
 def _card_resultado(partida: Partida, time: Time, rotulo: str) -> None:
     """Cartão de resultado de um jogo do clube do jogador."""
-    meus = (
-        partida.gols_casa if partida.time_casa == time.nome else partida.gols_fora
-    )
-    deles = (
-        partida.gols_fora if partida.time_casa == time.nome else partida.gols_casa
-    )
+    meus = partida.gols_casa if partida.time_casa == time.nome else partida.gols_fora
+    deles = partida.gols_fora if partida.time_casa == time.nome else partida.gols_casa
     cor = (
         "linear-gradient(135deg,#16A34A,#065F46)"
         if meus > deles
@@ -306,9 +304,7 @@ def _linha_do_tempo(eventos: list[str]):
             classe = ""
         itens.append(f'<div class="ev {classe}">{ev}</div>')
 
-    st.markdown(
-        '<div class="tl">' + "".join(itens) + "</div>", unsafe_allow_html=True
-    )
+    st.markdown('<div class="tl">' + "".join(itens) + "</div>", unsafe_allow_html=True)
 
 
 def _tela_fim_temporada(time: Time, league: League):
@@ -367,7 +363,7 @@ def _tela_fim_temporada(time: Time, league: League):
             st.success(f"✅ Melhor campanha da 1ª fase! ({pos}º lugar)")
 
     secao("Regulamento", NOMES_DIVISAO.get(minha, minha))
-    for regra in (piramide.regulamento(minha) if piramide is not None else []):
+    for regra in piramide.regulamento(minha) if piramide is not None else []:
         st.markdown(f"- {regra}")
 
     secao("Classificação final", NOMES_DIVISAO.get(minha, minha))
@@ -450,9 +446,7 @@ def _tela_fim_temporada(time: Time, league: League):
     if copa is not None:
         secao("Copa do Brasil", "Mata-mata em ida e volta")
         if copa.campeao is not None:
-            st.success(
-                f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**"
-            )
+            st.success(f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**")
         else:
             fase = copa.fases[-1] if copa.fases else None
             st.info(
@@ -506,5 +500,3 @@ def _tela_fim_temporada(time: Time, league: League):
             "Assim que todas as divisões terminarem, o acesso e o descenso "
             "são aplicados e você pode começar a temporada seguinte."
         )
-
-

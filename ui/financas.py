@@ -54,7 +54,9 @@ def tela_financas():
     with col1:
         stat_card("💰 Caixa", formatar_dinheiro(time.financas), "#16A34A")
     with col2:
-        stat_card("💼 Folha salarial", formatar_dinheiro(time.folha_salarial), "#C2410C")
+        stat_card(
+            "💼 Folha salarial", formatar_dinheiro(time.folha_salarial), "#C2410C"
+        )
     with col3:
         stat_card("📈 Receitas", formatar_dinheiro(receitas), "#0E7490")
     with col4:

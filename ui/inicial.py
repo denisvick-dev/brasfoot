@@ -54,7 +54,9 @@ def tela_inicial():
             "as demais em Calendário e Classificações."
         )
 
-    secao("Escolha seu time para começar a temporada", NOMES_DIVISAO.get(divisao, divisao))
+    secao(
+        "Escolha seu time para começar a temporada", NOMES_DIVISAO.get(divisao, divisao)
+    )
 
     custom = [
         t
@@ -63,9 +65,7 @@ def tela_inicial():
     ]
     times = list(clubes_divisao)
     if custom:
-        incluir = st.toggle(
-            f"Incluir meus clubes criados ({len(custom)})", value=True
-        )
+        incluir = st.toggle(f"Incluir meus clubes criados ({len(custom)})", value=True)
         if incluir:
             times += custom
 
@@ -125,5 +125,3 @@ def tela_inicial():
                     st.session_state.pagina = "painel"
                     st.rerun()
                 st.markdown("<div style='height:.6rem'></div>", unsafe_allow_html=True)
-
-

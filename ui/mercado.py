@@ -76,8 +76,12 @@ def tela_mercado():
                         unsafe_allow_html=True,
                     )
                     with cols[5]:
-                        if st.button("Comprar", key=f"buy_{j.id}", type="primary",
-                                     use_container_width=True):
+                        if st.button(
+                            "Comprar",
+                            key=f"buy_{j.id}",
+                            type="primary",
+                            use_container_width=True,
+                        ):
                             sucesso, msg = market.comprar_jogador(
                                 j, t_vendedor, time, preco
                             )
@@ -86,7 +90,7 @@ def tela_mercado():
                                     Noticia(
                                         titulo=f"📋 {time.nome} contrata {j.nome}!",
                                         texto=f"{j.nome} chega do {t_vendedor.nome} "
-                                              f"por {formatar_dinheiro(preco)}",
+                                        f"por {formatar_dinheiro(preco)}",
                                         rodada=st.session_state.league.rodada_atual,
                                         tipo="transferencia",
                                     )
@@ -116,8 +120,9 @@ def tela_mercado():
                     unsafe_allow_html=True,
                 )
                 with cols[5]:
-                    if st.button("Vender", key=f"sell_{j.id}",
-                                 use_container_width=True):
+                    if st.button(
+                        "Vender", key=f"sell_{j.id}", use_container_width=True
+                    ):
                         sucesso, msg = market.vender_jogador(j, time)
                         if sucesso:
                             st.success(msg)
@@ -127,9 +132,7 @@ def tela_mercado():
 
     with tab3:
         secao("Jogadores Livres", "Sem contrato")
-        st.caption(
-            "Custo de contratação: 6 meses de salário adiantados."
-        )
+        st.caption("Custo de contratação: 6 meses de salário adiantados.")
         if st.button("🔍 Buscar Jogadores Livres", type="primary"):
             livres = [market.gerar_jogador_livre() for _ in range(8)]
             st.session_state["jogadores_livres"] = livres
@@ -138,14 +141,13 @@ def tela_mercado():
             for j in st.session_state["jogadores_livres"]:
                 with st.container(border=True):
                     cols = st.columns([2.2, 0.7, 0.7, 1, 1, 1])
-                    cols[0].markdown(f"**{cor_posicao(j.posicao)} {j.nome}**",
-                                     unsafe_allow_html=True)
+                    cols[0].markdown(
+                        f"**{cor_posicao(j.posicao)} {j.nome}**", unsafe_allow_html=True
+                    )
                     cols[1].markdown(badge_overall(j.overall), unsafe_allow_html=True)
                     cols[2].markdown(f"🎂 {j.idade}")
                     cols[3].markdown(f"💵 {formatar_dinheiro(j.salario)}/mês")
-                    cols[4].markdown(
-                        f"💎 {formatar_dinheiro(j.valor_mercado)}"
-                    )
+                    cols[4].markdown(f"💎 {formatar_dinheiro(j.valor_mercado)}")
                     with cols[5]:
                         custo = j.salario * 6
                         if st.button(
@@ -165,5 +167,3 @@ def tela_mercado():
                                 st.session_state["jogadores_livres"].remove(j)
                                 st.success(f"✅ {j.nome} contratado!")
                                 st.rerun()
-
-

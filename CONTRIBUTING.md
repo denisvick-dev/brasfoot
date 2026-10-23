@@ -40,7 +40,8 @@ Arquivos em `assets/escudos/<SIGLA>.png`, com a sigla exatamente como está em
 
 ```python
 from game.escudos import faltando, orfaos
-faltando(), orfaos()   # os dois devem voltar []
+
+faltando(), orfaos()  # os dois devem voltar []
 ```
 
 ## Commits e PRs

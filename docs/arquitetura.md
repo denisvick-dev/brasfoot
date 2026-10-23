@@ -37,15 +37,15 @@ fundação e rival**. As fichas ficam em `game/clubes.py`; `game/banco_dados.py`
 transforma ficha em `Time` (gerando o elenco).
 
 ```python
-criar_times()                            # 20 clubes (padrão antigo)
-criar_times(24)                          # A + os melhores da B
-criar_times(divisao="B")                 # só uma divisão
-criar_times(None)                        # todos os 156
+criar_times()  # 20 clubes (padrão antigo)
+criar_times(24)  # A + os melhores da B
+criar_times(divisao="B")  # só uma divisão
+criar_times(None)  # todos os 156
 criar_times(32, aleatorio=True, semente=7)
-criar_todas_divisoes()                   # {"A": [...], "B": [...], "C": [...], "D": [...]}
-buscar_clube("FLA")                      # ficha completa do clube
-clubes_por_divisao("D")                  # fichas de uma divisão
-resumo_banco()                           # contagem por divisão
+criar_todas_divisoes()  # {"A": [...], "B": [...], "C": [...], "D": [...]}
+buscar_clube("FLA")  # ficha completa do clube
+clubes_por_divisao("D")  # fichas de uma divisão
+resumo_banco()  # contagem por divisão
 ```
 
 Na interface, o seletor **Divisão** da tela inicial define qual campeonato é

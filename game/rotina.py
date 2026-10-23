@@ -84,9 +84,7 @@ def pagar_salarios(time: Time, rodada: int) -> int:
     return folha
 
 
-def entre_rodadas(
-    times: list[Time], rodada: int, rodadas_por_mes: int = 6
-) -> None:
+def entre_rodadas(times: list[Time], rodada: int, rodadas_por_mes: int = 6) -> None:
     """Roda a rotina de todos os clubes ao fim de uma rodada."""
     for time in times:
         recuperar(time)

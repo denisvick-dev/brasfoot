@@ -21,7 +21,9 @@ def sidebar():
     league = st.session_state.league
 
     pos_sidebar = posicao_na_tabela(league, time.nome)
-    posicao_html = f' <span class="pill p-ok">{pos_sidebar}º lugar</span>' if pos_sidebar else ""
+    posicao_html = (
+        f' <span class="pill p-ok">{pos_sidebar}º lugar</span>' if pos_sidebar else ""
+    )
 
     with st.sidebar:
         st.markdown(
@@ -57,9 +59,7 @@ def sidebar():
 
         col3, col4 = st.columns(2)
         with col3:
-            st.metric(
-                "📊 Posição", f"{posicao_na_tabela(league, time.nome)}º"
-            )
+            st.metric("📊 Posição", f"{posicao_na_tabela(league, time.nome)}º")
         with col4:
             st.metric("🎭 Moral", f"{time.moral_time}%")
 
@@ -118,5 +118,3 @@ def sidebar():
                 del st.session_state[key]
             st.session_state.update(preservar)
             st.rerun()
-
-

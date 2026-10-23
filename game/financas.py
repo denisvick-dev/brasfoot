@@ -40,9 +40,7 @@ _PREMIO_MINIMO = {"A": 8_000_000, "B": 2_500_000, "C": 900_000, "D": 300_000}
 _PREMIO_COPA = (30_000_000, 12_000_000)
 
 
-def registrar(
-    time: Time, rodada: int, tipo: str, descricao: str, valor: int
-) -> None:
+def registrar(time: Time, rodada: int, tipo: str, descricao: str, valor: int) -> None:
     """Lança uma receita (valor > 0) ou despesa (valor < 0) no clube."""
     if tipo not in TIPOS:
         tipo = "outros"

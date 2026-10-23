@@ -81,9 +81,7 @@ def _aba_copa_classificacao():
     """Conteúdo da aba da Copa do Brasil nas classificações."""
     copa = get_copa()
     if copa is None:
-        st.info(
-            "A Copa do Brasil não foi montada nesta temporada (poucos clubes)."
-        )
+        st.info("A Copa do Brasil não foi montada nesta temporada (poucos clubes).")
         return
 
     fase = copa.fases[-1] if copa.fases else None
@@ -148,9 +146,7 @@ def _regional_mata_html(torneio: TorneioRegional, fase) -> str:
     linhas = []
     jogos = fase.jogos
     pares = fase.pares or [
-        (jogo.time_casa, jogo.time_fora)
-        for jogo in jogos
-        if fase.nome != "Final"
+        (jogo.time_casa, jogo.time_fora) for jogo in jogos if fase.nome != "Final"
     ]
     if fase.nome == "Final" and not pares and len(torneio.fases) >= 2:
         finalistas = torneio.fases[-2].vencedores
@@ -159,9 +155,7 @@ def _regional_mata_html(torneio: TorneioRegional, fase) -> str:
     for casa, fora in pares:
         gols_casa = gols_fora = 0
         partidas = [
-            jogo
-            for jogo in jogos
-            if {jogo.time_casa, jogo.time_fora} == {casa, fora}
+            jogo for jogo in jogos if {jogo.time_casa, jogo.time_fora} == {casa, fora}
         ]
         for jogo in partidas:
             if jogo.time_casa == casa:
@@ -170,18 +164,12 @@ def _regional_mata_html(torneio: TorneioRegional, fase) -> str:
             else:
                 gols_casa += jogo.gols_fora
                 gols_fora += jogo.gols_casa
-        prossegue = bool(vencedores) and (
-            (casa in vencedores) or (fora in vencedores)
-        )
+        prossegue = bool(vencedores) and ((casa in vencedores) or (fora in vencedores))
         cls_c = (
-            "v"
-            if casa in vencedores
-            else ("d" if prossegue or fase.concluida else "")
+            "v" if casa in vencedores else ("d" if prossegue or fase.concluida else "")
         )
         cls_f = (
-            "v"
-            if fora in vencedores
-            else ("d" if prossegue or fase.concluida else "")
+            "v" if fora in vencedores else ("d" if prossegue or fase.concluida else "")
         )
         meu = time is not None and time.nome in (casa, fora)
         estilo = "border-color:var(--brand);background:#F2FBF5" if meu else ""
@@ -215,9 +203,7 @@ def _aba_regionais_classificacao() -> None:
     chave = st.selectbox(
         "Torneio",
         [t.chave for t in torneios],
-        format_func=lambda k: next(
-            (t.nome for t in torneios if t.chave == k), str(k)
-        ),
+        format_func=lambda k: next((t.nome for t in torneios if t.chave == k), str(k)),
         key="regional_classificacao",
     )
     torneio = piramide.torneio(chave)
@@ -248,9 +234,7 @@ def _aba_regionais_calendario() -> None:
     chave = st.selectbox(
         "Torneio",
         [t.chave for t in torneios],
-        format_func=lambda k: next(
-            (t.nome for t in torneios if t.chave == k), str(k)
-        ),
+        format_func=lambda k: next((t.nome for t in torneios if t.chave == k), str(k)),
         key="regional_calendario",
     )
     torneio = piramide.torneio(chave)
@@ -294,7 +278,9 @@ def tela_classificacao():
     divisoes = divisoes_da_temporada()
     piramide_atual = get_piramide()
     rodada_geral = (
-        piramide_atual.rodada_global if piramide_atual is not None else league.rodada_atual
+        piramide_atual.rodada_global
+        if piramide_atual is not None
+        else league.rodada_atual
     )
 
     st.markdown(
@@ -345,18 +331,14 @@ def tela_classificacao():
             fases = _fases_da_divisao(divisao)
             if not fases:
                 # modo antigo (sem pirâmide): tabela única
-                st.markdown(
-                    tabela_classificacao(divisao, time), unsafe_allow_html=True
-                )
+                st.markdown(tabela_classificacao(divisao, time), unsafe_allow_html=True)
                 st.markdown(legenda_zonas(divisao), unsafe_allow_html=True)
                 continue
 
             for i, (nome_fase, fase) in enumerate(fases):
                 if fase.tipo == "mata":
                     secao(nome_fase, f"{len(fase.pares)} confrontos")
-                    st.markdown(
-                        _resultado_mata(divisao, fase), unsafe_allow_html=True
-                    )
+                    st.markdown(_resultado_mata(divisao, fase), unsafe_allow_html=True)
                     continue
 
                 if fase.tipo == "pontos":
@@ -368,7 +350,9 @@ def tela_classificacao():
                 if len(grupos) == 1:
                     st.markdown(
                         tabela_html(
-                            temporada.tabela(fase) if temporada else linhas_classificacao(divisao),
+                            temporada.tabela(fase)
+                            if temporada
+                            else linhas_classificacao(divisao),
                             time=time,
                             divisao=divisao,
                         ),
@@ -397,13 +381,13 @@ def tela_classificacao():
 
             # regulamento da divisão
             regras = (
-                piramide_atual.regulamento(divisao) if piramide_atual is not None else []
+                piramide_atual.regulamento(divisao)
+                if piramide_atual is not None
+                else []
             )
             if regras:
                 with st.expander("📖 Regulamento da divisão"):
-                    st.markdown(
-                        "".join(f"- {regra}\n" for regra in regras)
-                    )
+                    st.markdown("".join(f"- {regra}\n" for regra in regras))
 
     indice_extra = len(divisoes)
     if tem_copa:
@@ -548,11 +532,7 @@ def tela_calendario():
             estilo = "border-color:var(--brand);background:#F2FBF5" if destaque else ""
             if partida is not None:
                 placar = f"<b>{partida.gols_casa} x {partida.gols_fora}</b>"
-                extra = (
-                    f"👥 {partida.publico:,}"
-                    if partida.publico
-                    else ""
-                )
+                extra = f"👥 {partida.publico:,}" if partida.publico else ""
             else:
                 placar = "<span style='color:var(--ink-3)'>x</span>"
                 extra = "a jogar"
@@ -628,9 +608,7 @@ def tela_calendario():
                     unsafe_allow_html=True,
                 )
             if copa.campeao is not None:
-                st.success(
-                    f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**"
-                )
+                st.success(f"🏆 Campeão da Copa do Brasil: **{copa.campeao.nome}**")
 
     if aba_regionais is not None:
         with aba_regionais:
@@ -659,13 +637,9 @@ def tela_calendario():
                     piramide_atual.regional_jogos_do_time(time.nome)
                 )
             ]
-            if (
-                piramide_atual.supercopa is not None
-                and time.nome
-                in (
-                    piramide_atual.supercopa.time_casa,
-                    piramide_atual.supercopa.time_fora,
-                )
+            if piramide_atual.supercopa is not None and time.nome in (
+                piramide_atual.supercopa.time_casa,
+                piramide_atual.supercopa.time_fora,
             ):
                 jogos.append(
                     (
@@ -690,9 +664,7 @@ def tela_calendario():
         vitorias = empates = derrotas = 0
         linhas = []
         for rodada, casa, fora, partida, competicao in jogos:
-            rodada_global = rodada + (
-                deslocamento if competicao == "divisao" else 0
-            )
+            rodada_global = rodada + (deslocamento if competicao == "divisao" else 0)
             data = (
                 data_da_rodada(minha, rodada)
                 if competicao == "divisao"
@@ -701,7 +673,11 @@ def tela_calendario():
             em_casa = casa == time.nome
             adversario = fora if em_casa else casa
             if partida is None:
-                tag, cls, placar = "–", "e", "<span style='color:var(--ink-3)'>a jogar</span>"
+                tag, cls, placar = (
+                    "–",
+                    "e",
+                    "<span style='color:var(--ink-3)'>a jogar</span>",
+                )
             else:
                 meus = partida.gols_casa if em_casa else partida.gols_fora
                 deles = partida.gols_fora if em_casa else partida.gols_casa
@@ -783,8 +759,8 @@ def tela_resultados():
                 destaque = time is not None and time.nome in (casa, fora)
                 st.markdown(
                     f"""
-                <div class="res" style="{ 'border-color:var(--brand);background:#F2FBF5' if destaque else '' }">
-                    <span style="{ 'font-weight:800' if destaque else '' }">⚽ {casa}
+                <div class="res" style="{"border-color:var(--brand);background:#F2FBF5" if destaque else ""}">
+                    <span style="{"font-weight:800" if destaque else ""}">⚽ {casa}
                     <b>{partida.gols_casa} x {partida.gols_fora}</b> {fora}</span>
                     <span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">
                         👥 {partida.publico:,}
@@ -828,11 +804,11 @@ def tela_resultados():
                     )
                     st.markdown(
                         f"""
-                    <div class="res" style="{ 'border-color:var(--brand);background:#F2FBF5' if destaque else '' }">
-                        <span style="{ 'font-weight:800' if destaque else '' }">🏆 {partida.time_casa}
+                    <div class="res" style="{"border-color:var(--brand);background:#F2FBF5" if destaque else ""}">
+                        <span style="{"font-weight:800" if destaque else ""}">🏆 {partida.time_casa}
                         <b>{partida.gols_casa} x {partida.gols_fora}</b> {partida.time_fora}</span>
                         <span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">
-                            {partida.grupo or 'jogo único'}
+                            {partida.grupo or "jogo único"}
                         </span>
                     </div>
                     """,
@@ -856,9 +832,7 @@ def tela_resultados():
                 key="resultados_regional",
             )
             torneio = (
-                piramide_reg.torneio(chave_reg)
-                if piramide_reg is not None
-                else None
+                piramide_reg.torneio(chave_reg) if piramide_reg is not None else None
             )
             if torneio is None:
                 st.info("Torneio indisponível nesta temporada.")
@@ -886,8 +860,8 @@ def tela_resultados():
                         )
                         st.markdown(
                             f"""
-                        <div class="res" style="{ 'border-color:var(--brand);background:#F2FBF5' if destaque else '' }">
-                            <span style="{ 'font-weight:800' if destaque else '' }">🌎 {partida.time_casa}
+                        <div class="res" style="{"border-color:var(--brand);background:#F2FBF5" if destaque else ""}">
+                            <span style="{"font-weight:800" if destaque else ""}">🌎 {partida.time_casa}
                             <b>{partida.gols_casa} x {partida.gols_fora}</b> {partida.time_fora}</span>
                             <span style="margin-left:auto;color:var(--ink-3);font-size:.78rem">
                                 {partida.grupo or partida.fase}
@@ -896,5 +870,3 @@ def tela_resultados():
                         """,
                             unsafe_allow_html=True,
                         )
-
-

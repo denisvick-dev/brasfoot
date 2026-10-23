@@ -147,9 +147,7 @@ class League:
 
     def _entre_rodadas(self):
         """Processa eventos entre rodadas (energia, lesões, suspensões, salários)."""
-        rotina.entre_rodadas(
-            self.times, self.rodada_atual, self.engine.RODADAS_POR_MES
-        )
+        rotina.entre_rodadas(self.times, self.rodada_atual, self.engine.RODADAS_POR_MES)
 
     @property
     def classificacao(self) -> list[Time]:

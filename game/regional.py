@@ -145,7 +145,11 @@ class TorneioRegional:
         grupos: dict[str, list[Time]] = {letra: [] for letra in letras[:n_grupos]}
         for i, time in enumerate(times):
             indice = i % n_grupos
-            letra = letras[indice] if (i // n_grupos) % 2 == 0 else letras[:n_grupos][::-1][indice]
+            letra = (
+                letras[indice]
+                if (i // n_grupos) % 2 == 0
+                else letras[:n_grupos][::-1][indice]
+            )
             grupos[letra].append(time)
         return grupos
 
@@ -334,7 +338,9 @@ class TorneioRegional:
         partida = self._simular(casa.nome, fora.nome, rodada, time_jogador)
         partida.fase = fase.nome
         partida.grupo = "Volta" if perna else "Ida"
-        partida.eventos.insert(0, f"🏆 {self.nome} · Final · jogo de {partida.grupo.lower()}")
+        partida.eventos.insert(
+            0, f"🏆 {self.nome} · Final · jogo de {partida.grupo.lower()}"
+        )
         fase.jogos.append(partida)
         self._resultados.setdefault(rodada, []).extend([partida])
 
@@ -372,11 +378,7 @@ class TorneioRegional:
         vencedores: list[Time] = []
         for casa, fora in fase.pares:
             partida = next(
-                (
-                    p
-                    for p in fase.jogos
-                    if p.time_casa == casa and p.time_fora == fora
-                ),
+                (p for p in fase.jogos if p.time_casa == casa and p.time_fora == fora),
                 None,
             )
             a, b = self._por_nome[casa], self._por_nome[fora]
@@ -400,9 +402,7 @@ class TorneioRegional:
             pares.append((participantes[i].nome, participantes[-1 - i].nome))
         return pares
 
-    def _simular(
-        self, casa: str, fora: str, rodada: int, time_jogador: str
-    ) -> Partida:
+    def _simular(self, casa: str, fora: str, rodada: int, time_jogador: str) -> Partida:
         return self.engine.simular(
             self._por_nome[casa],
             self._por_nome[fora],
@@ -444,9 +444,7 @@ class TorneioRegional:
                 return [(casa, fora, None) for casa, fora in fase.pares if fora]
         return []
 
-    def jogos_do_time(
-        self, nome: str
-    ) -> list[tuple[int, str, str, Partida | None]]:
+    def jogos_do_time(self, nome: str) -> list[tuple[int, str, str, Partida | None]]:
         """Jogos do clube no torneio: ``(rodada, casa, fora, partida)``."""
         jogos: list[tuple[int, str, str, Partida | None]] = []
         for rodada, partidas in sorted(self._resultados.items()):
@@ -473,9 +471,7 @@ class TorneioRegional:
             finalistas = self.fases[-2].vencedores
             if nome not in (t.nome for t in finalistas):
                 return None
-            forte, fraco = sorted(
-                finalistas, key=lambda t: (-t.reputacao, t.nome)
-            )
+            forte, fraco = sorted(finalistas, key=lambda t: (-t.reputacao, t.nome))
             perna = len(fase.jogos) // 2
             casa, fora = (fraco, forte) if perna == 0 else (forte, fraco)
             return (rodada, casa.nome, fora.nome)

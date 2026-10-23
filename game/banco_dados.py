@@ -260,7 +260,6 @@ def _gerar_elenco(forca_min: int, forca_max: int) -> list[Jogador]:
     return elenco
 
 
-
 # ============================================================
 # Consultas ao banco (as fichas vivem em game.clubes)
 # ============================================================

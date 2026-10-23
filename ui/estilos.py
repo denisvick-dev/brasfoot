@@ -622,5 +622,3 @@ hr{ border-color:var(--line); }
 """,
         unsafe_allow_html=True,
     )
-
-

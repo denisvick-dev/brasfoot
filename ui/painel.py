@@ -153,6 +153,6 @@ def tela_painel():
     if league.noticias:
         secao("Últimas Notícias", "Midia")
         for noticia in league.noticias[-5:][::-1]:
-            st.info(f"**{noticia.titulo}** (Rodada {noticia.rodada})\n\n{noticia.texto}")
-
-
+            st.info(
+                f"**{noticia.titulo}** (Rodada {noticia.rodada})\n\n{noticia.texto}"
+            )

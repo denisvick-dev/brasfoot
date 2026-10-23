@@ -77,15 +77,15 @@ simulada avança A, B, C e D; a sua divisão decide o calendário da tela
 ```python
 from game.piramide import Piramide
 
-piramide = Piramide(times)          # times com .divisao = "A".."D"
-piramide.ordem                      # ['A', 'B', 'C', 'D']
-piramide.rodada("B")                # rodada atual da Série B
-piramide.simular_rodada("Flamengo") # uma rodada em cada divisão
-piramide.classificacao("D")         # tabela completa da Série D
-piramide.confrontos_da_rodada("C", 12)   # jogos da rodada 12 (com placar)
-piramide.data_da_rodada(1)          # data fictícia da rodada
-piramide.acesso_descenso()          # prévia do sobe-e-desce
-piramide.nova_temporada()           # aplica e recomeça
+piramide = Piramide(times)  # times com .divisao = "A".."D"
+piramide.ordem  # ['A', 'B', 'C', 'D']
+piramide.rodada("B")  # rodada atual da Série B
+piramide.simular_rodada("Flamengo")  # uma rodada em cada divisão
+piramide.classificacao("D")  # tabela completa da Série D
+piramide.confrontos_da_rodada("C", 12)  # jogos da rodada 12 (com placar)
+piramide.data_da_rodada(1)  # data fictícia da rodada
+piramide.acesso_descenso()  # prévia do sobe-e-desce
+piramide.nova_temporada()  # aplica e recomeça
 ```
 
 Regras do sobe-e-desce (`ACESSO_PADRAO`): caem **4** de cada divisão, sobem os
