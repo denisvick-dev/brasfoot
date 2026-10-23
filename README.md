@@ -106,7 +106,7 @@ tests/                 suíte pytest
 pip install -r requirements-dev.txt
 ruff check .      # lint
 pyright .         # tipos (mesmo resultado do Pylance)
-pytest            # 66 testes
+pytest            # 68 testes (determinístico)
 ```
 
 O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.

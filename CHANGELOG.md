@@ -26,10 +26,21 @@ O projeto usa versionamento semântico.
   campeonato avulso, com um instante de pausa para dar para acompanhar.
 - **Placares da rodada** na tela de jogo: todos os jogos da rodada, agrupados
   por competição (estilo Brasfoot), com escudo, mandante, visitante e placar.
-- Testes de finanças, rotina, diretoria e progresso da simulação (66 no total).
+- Testes de finanças, rotina, diretoria e progresso da simulação (68 no total).
+- Teste de desempate da classificação (pontos → vitórias → saldo → gols pró).
 
 ### Corrigido
 
+- Suíte de testes **determinística**: o `random` global é semeado antes de cada
+  teste (`BRASFOOT_SEED`, padrão `2026`). Antes, o teste de classificação
+  falhava de vez em quando (o CI ficava vermelho sem mudança de código) porque a
+  ordenação usa também vitórias e gols pró, e o teste só comparava pontos/saldo.
+- Teste de cartões não tinha asserção de verdade (`... or True`); agora confere
+  que só fica suspenso quem levou 3 amarelos ou vermelho.
+- Teste do mando de campo falhava em ~1% das sementes (120 jogos era pouco para
+  separar bônus de casa de força do elenco). Agora cada confronto é jogado nos
+  dois sentidos, com 400 partidas, e há um teste determinístico que confere o
+  bônus direto nas funções de força.
 - Na pirâmide (jogo principal) a energia dos jogadores **nunca** era recuperada,
   as lesões não saravam, as suspensões não eram cumpridas e os salários não eram
   cobrados — a rotina só existia no campeonato avulso.
