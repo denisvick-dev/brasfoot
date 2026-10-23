@@ -4,6 +4,7 @@ Mercado de transferências.
 
 import random
 
+from game import financas
 from game.banco_dados import _next_id, _nome_aleatorio
 from game.modelos import Jogador, Time
 
@@ -40,8 +41,16 @@ class Market:
             return False, "❌ Elenco lotado! (máximo 30 jogadores)"
 
         # Transferir
-        time_comprador.financas -= preco
-        time_vendedor.financas += preco
+        financas.registrar(
+            time_comprador,
+            0,
+            "transferencia",
+            f"Contratação de {jogador.nome}",
+            -preco,
+        )
+        financas.registrar(
+            time_vendedor, 0, "transferencia", f"Venda de {jogador.nome}", preco
+        )
 
         time_vendedor.jogadores.remove(jogador)
         jogador.titular = False
@@ -67,13 +76,17 @@ class Market:
             return False, "❌ Não há outro clube para receber o jogador!"
 
         preco = int(jogador.valor_mercado * random.uniform(0.6, 1.1))
-        time_jogador.financas += preco
         time_jogador.jogadores.remove(jogador)
 
         destino = random.choice(outros)
         jogador.titular = False
         destino.jogadores.append(jogador)
-        destino.financas -= preco
+        financas.registrar(
+            time_jogador, 0, "transferencia", f"Venda de {jogador.nome}", preco
+        )
+        financas.registrar(
+            destino, 0, "transferencia", f"Contratação de {jogador.nome}", -preco
+        )
         destino.auto_escalar()
         time_jogador.auto_escalar()
 

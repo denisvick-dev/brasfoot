@@ -17,6 +17,7 @@ Os números abaixo foram calibrados para chegar perto do Brasileirão real:
 import random
 from typing import ClassVar
 
+from game import financas
 from game.modelos import Partida, Time
 
 
@@ -190,11 +191,15 @@ class MatchEngine:
                 if random.random() < 0.85:
                     jogador.cartoes_amarelos += 1
                     if jogador.cartoes_amarelos >= 3:
+                        # 2 = o fim desta rodada já desconta um; ele desfalca
+                        # exatamente o próximo jogo do clube
                         jogador.suspenso = True
+                        jogador.jogos_suspenso = 2
                     return f"🟨 {minuto}' - Cartão amarelo para {jogador.nome} ({time_atk.sigla})"
                 else:
                     jogador.cartoes_vermelhos += 1
                     jogador.suspenso = True
+                    jogador.jogos_suspenso = 2
                     return f"🟥 {minuto}' - Cartão vermelho! {jogador.nome} ({time_atk.sigla}) expulso!"
         elif tipo == "falta":
             return f"⚠️ {minuto}' - Falta perigosa para {time_atk.sigla}"
@@ -322,7 +327,16 @@ class MatchEngine:
             self.INGRESSO_MIN, self.INGRESSO_MAX
         )
         cota_tv = time_casa.torcida * self.COTA_TV_POR_TORCEDOR
-        time_casa.financas += bilheteria + cota_tv
+        financas.registrar(
+            time_casa,
+            partida.rodada,
+            "bilheteria",
+            f"Bilheteria x {time_fora.nome} ({partida.publico:,} pagantes)".replace(",", "."),
+            bilheteria,
+        )
+        financas.registrar(
+            time_casa, partida.rodada, "tv", "Cota de TV da rodada", cota_tv
+        )
 
         # Jogos dos titulares
         for j in time_casa.titulares + time_fora.titulares:

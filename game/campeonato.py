@@ -3,7 +3,9 @@ Gerenciamento do campeonato (Brasileirão).
 """
 
 import random
+from collections.abc import Callable
 
+from game import rotina
 from game.jogo_engine import MatchEngine
 from game.modelos import Jogador, Noticia, Partida, Time
 
@@ -77,8 +79,12 @@ class League:
                 return t
         raise ValueError(f"Time '{nome}' não encontrado!")
 
-    def simular_rodada(self, time_jogador: str) -> list[Partida]:
-        """Simula todos os jogos da rodada atual."""
+    def simular_rodada(
+        self,
+        time_jogador: str,
+        progresso: Callable[[float, str], None] | None = None,
+    ) -> list[Partida]:
+        """Simula todos os jogos da rodada atual (avisa o progresso jogo a jogo)."""
         if self.rodada_atual >= self.total_rodadas:
             self.campeonato_encerrado = True
             return []
@@ -86,7 +92,13 @@ class League:
         jogos = self.calendario[self.rodada_atual]
         resultados = []
 
-        for casa_nome, fora_nome in jogos:
+        total = max(1, len(jogos))
+        for indice, (casa_nome, fora_nome) in enumerate(jogos, start=1):
+            if progresso is not None:
+                progresso(
+                    indice / total,
+                    f"{casa_nome} x {fora_nome}",
+                )
             time_casa = self._get_time_por_nome(casa_nome)
             time_fora = self._get_time_por_nome(fora_nome)
 
@@ -134,32 +146,10 @@ class League:
         return resultados
 
     def _entre_rodadas(self):
-        """Processa eventos entre rodadas."""
-        for time in self.times:
-            # Recuperar energia (menos do que o desgaste de um jogo inteiro:
-            # quem joga toda rodada precisa ser poupado em algum momento)
-            for j in time.jogadores:
-                j.recuperar_energia(
-                    random.randint(
-                        self.engine.RECUPERACAO_MIN, self.engine.RECUPERACAO_MAX
-                    )
-                )
-
-                # Chance de cura de lesão
-                if j.lesionado and random.random() < 0.3:
-                    j.lesionado = False
-                    j.energia = 60
-
-                # Limpar suspensão (simplificado: 1 rodada)
-                if j.suspenso and random.random() < 0.5:
-                    j.suspenso = False
-
-            # Pagamento de salários (folha mensal, a cada RODADAS_POR_MES)
-            if self.rodada_atual % self.engine.RODADAS_POR_MES == 0:
-                time.financas -= time.folha_salarial
-
-            # Re-escalar times da CPU (já considera energia)
-            time.auto_escalar()
+        """Processa eventos entre rodadas (energia, lesões, suspensões, salários)."""
+        rotina.entre_rodadas(
+            self.times, self.rodada_atual, self.engine.RODADAS_POR_MES
+        )
 
     @property
     def classificacao(self) -> list[Time]:
