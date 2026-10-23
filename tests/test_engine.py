@@ -37,4 +37,8 @@ def test_cartoes_suspendem_jogador(times8):
         engine.simular(times8[2], times8[3], rodada=1)
     amarelos = sum(j.cartoes_amarelos for t in times8 for j in t.jogadores)
     assert amarelos > 0
-    assert any(j.suspenso for t in times8 for j in t.jogadores) or True
+    # Três amarelos (ou um vermelho) tiram o jogador da rodada seguinte.
+    for time in times8:
+        for jogador in time.jogadores:
+            esperado = jogador.cartoes_amarelos >= 3 or jogador.cartoes_vermelhos > 0
+            assert jogador.suspenso == esperado, jogador.nome

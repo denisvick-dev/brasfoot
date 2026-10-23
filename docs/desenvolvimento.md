@@ -25,9 +25,20 @@ python shots.py           # screenshots das telas (app rodando + playwright)
 ## Testes
 
 ```bash
-pytest                 # suíte completa (66 testes, ~4 s)
-pytest -k piramide     # só um arquivo/tema
-pytest -v              # nome de cada teste
+pytest                          # suíte completa (67 testes, ~4 s)
+pytest -k piramide              # só um arquivo/tema
+pytest -v                       # nome de cada teste
+BRASFOOT_SEED=1234 pytest       # reproduz a semente usada na investigação
+```
+
+A suíte é **determinística**: o fixture `semente_fixa` (em `tests/conftest.py`)
+semeia o `random` global antes de cada teste com `BRASFOOT_SEED` (padrão
+`2026`). Sem isso, cada execução gerava um universo diferente e o teste de
+classificação falhava de vez em quando — o que apareceu como "CI vermelho sem
+motivo". Para caçar testes frágeis, varra várias sementes:
+
+```bash
+for s in $(seq 1 50); do BRASFOOT_SEED=$s pytest -q || break; done
 ```
 
 A suíte cobre modelos, banco de clubes e escudos, campeonato, copa, pirâmide

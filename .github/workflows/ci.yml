@@ -12,6 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
+    env:
+      BRASFOOT_SEED: "2026"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,4 +29,14 @@ jobs:
       - name: Tipos (pyright)
         run: pyright .
       - name: Testes (pytest)
-        run: pytest
+        run: |
+          echo "semente: ${BRASFOOT_SEED:-2026} (padrão)"
+          pytest
+      - name: Testes com outras sementes (3.11)
+        if: matrix.python-version == '3.11'
+        run: |
+          for s in 1 2 3 4 5; do
+            echo "::group::semente $s"
+            BRASFOOT_SEED=$s pytest -q
+            echo "::endgroup::"
+          done

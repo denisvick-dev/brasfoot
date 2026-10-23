@@ -22,7 +22,13 @@ pytest            # testes
 python main.py 156 1   # temporada completa, sem exceção
 ```
 
-O CI repete os três primeiros em Python 3.11 e 3.12.
+O CI repete os três primeiros em Python 3.11 e 3.12, e roda a suíte também
+com cinco sementes diferentes para pegar teste que depende de sorte.
+
+Os testes são determinísticos: `tests/conftest.py` semeia o `random` global
+com `BRASFOOT_SEED` (padrão `2026`). Se um teste falhar no CI, rode
+`BRASFOOT_SEED=<semente do log>` para reproduzir. Nunca escreva asserção
+estatística sem faixa de tolerância — e prefira cenário montado à sorte.
 
 ## Padrões do código
 

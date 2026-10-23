@@ -27,14 +27,41 @@ def test_simular_rodada_distribui_pontos(times8):
     assert liga.rodada_atual == 1
 
 
-def test_classificacao_ordena_por_pontos_e_saldo(times8):
+def test_classificacao_ordena_pelos_criterios_do_brasileirao(times8):
+    """Pontos → vitórias → saldo → gols pró, como no regulamento."""
     liga = League(times8)
     for _ in range(3):
         liga.simular_rodada("")
     tabela = liga.classificacao
     assert len(tabela) == 8
-    chaves = [(t.pontos, t.saldo_gols) for t in tabela]
+    chaves = [(t.pontos, t.vitorias, t.saldo_gols, t.gols_pro) for t in tabela]
     assert chaves == sorted(chaves, reverse=True)
+
+
+def test_empate_em_pontos_desempata_por_vitorias_depois_por_saldo(times8):
+    """Com os mesmos pontos, mais vitórias vem antes — mesmo com saldo pior."""
+    alvo = times8[:4]
+    # (pontos, vitórias, gols pró, gols contra) → saldo = pró − contra
+    pontos = (9, 9, 9, 9)
+    vitorias = (3, 3, 2, 2)
+    gols_pro = (4, 2, 8, 6)
+    gols_contra = (3, 3, 5, 3)
+    for time, p, v, gp, gc in zip(alvo, pontos, vitorias, gols_pro, gols_contra, strict=True):
+        time.pontos, time.vitorias = p, v
+        time.gols_pro = gp
+        time.gols_contra = gc
+
+    # saldos: 1, -1, 3, 3
+    assert [t.saldo_gols for t in alvo] == [1, -1, 3, 3]
+
+    liga = League(times8)
+    nomes = [t.nome for t in liga.classificacao]
+    # 3 vitórias passa na frente de 2 vitórias, ainda que o saldo seja menor.
+    assert nomes.index(alvo[1].nome) < nomes.index(alvo[2].nome)
+    # Entre os "3 vitórias", melhor saldo primeiro.
+    assert nomes.index(alvo[0].nome) < nomes.index(alvo[1].nome)
+    # Empate em pontos, vitórias e saldo: mais gols pró primeiro.
+    assert nomes.index(alvo[2].nome) < nomes.index(alvo[3].nome)
 
 
 def test_artilharia_ordenada(times8):
