@@ -2,6 +2,7 @@
 Tela de partida: pré-jogo, jogo ao vivo e fim de temporada.
 """
 
+import random
 import time as _time
 
 import streamlit as st
@@ -12,6 +13,14 @@ from game.banco_dados import (
 from game.campeonato import League
 from game.escudos import imagem as escudo_img
 from game.modelos import Partida, Time
+from ui.ao_vivo import (
+    VELOCIDADE_PADRAO,
+    VELOCIDADES,
+    html_ao_vivo,
+    minuto_final,
+    passos,
+    relogio,
+)
 from ui.apoio import (
     _rotulo_competicao,
     divisao_do_jogador,
@@ -127,14 +136,30 @@ def tela_jogar():
         )
 
     st.markdown("<div style='height:.6rem'></div>", unsafe_allow_html=True)
-    _, col_btn, _ = st.columns([1, 2, 1])
+    col_vel, col_btn = st.columns([1.3, 1])
+    with col_vel:
+        velocidade = st.radio(
+            "⏱️ Relógio da rodada",
+            list(VELOCIDADES),
+            index=list(VELOCIDADES).index(VELOCIDADE_PADRAO),
+            horizontal=True,
+            key="velocidade_rodada",
+            help="Quanto tempo o relógio leva para ir de 0' a 90'. "
+            "Cada simulação sorteia resultados novos.",
+        )
     with col_btn:
+        st.markdown("<div style='height:1.55rem'></div>", unsafe_allow_html=True)
         simular = st.button(
             "⚽ SIMULAR RODADA", type="primary", use_container_width=True
         )
     if simular:
+        # Cada rodada é um sorteio novo: o número fica na tela e, se precisar,
+        # reproduz exatamente esta rodada (foi a semente usada pelo motor).
+        sorteio = random.getrandbits(24)
+        random.seed(sorteio)
+        st.session_state.sorteio_rodada = sorteio
+
         barra = st.progress(0.0, text="⚽ Preparando a rodada...")
-        inicio = _time.time()
 
         def _progresso(fracao: float, rotulo: str) -> None:
             barra.progress(min(1.0, fracao), text=f"⚽ Simulando {rotulo}...")
@@ -173,11 +198,15 @@ def tela_jogar():
             }
 
         st.session_state.placares_rodada_numero = rodada_global
-        barra.progress(1.0, text="✅ Rodada simulada — confira os placares abaixo")
-        # deixa a barra visível por um instante (a rodada roda em milissegundos)
-        decorrido = _time.time() - inicio
-        if decorrido < 0.7:
-            _time.sleep(0.7 - decorrido)
+        barra.empty()
+        # A rodada já está calculada; agora o relógio passa de 0' a 90' mostrando
+        # os gols acontecendo (ou seja: "tempo rodando com barra de progresso").
+        _rodar_relogio(
+            st.session_state.placares_rodada or {},
+            time,
+            rodada_global,
+            velocidade,
+        )
         st.rerun()
 
     meus_jogos = st.session_state.get("ultima_rodada") or []
@@ -197,6 +226,12 @@ def tela_jogar():
             else f"{total_jogos} jogos",
         )
         st.markdown(_html_placares(placares), unsafe_allow_html=True)
+        sorteio = st.session_state.get("sorteio_rodada")
+        if sorteio:
+            st.caption(
+                f"🎲 Sorteio #{sorteio:06x} — cada simulação sorteia resultados "
+                "novos; o número identifica este sorteio."
+            )
 
     outras = [d for d in divisoes_da_temporada() if d != divisao_do_jogador()]
     pendentes = [d for d in outras if rodada_de(d) > 0]
@@ -500,3 +535,57 @@ def _tela_fim_temporada(time: Time, league: League):
             "Assim que todas as divisões terminarem, o acesso e o descenso "
             "são aplicados e você pode começar a temporada seguinte."
         )
+
+
+def _rodar_relogio(
+    placares: dict[str, list[Partida]],
+    time: Time,
+    rodada: int,
+    velocidade: str,
+) -> None:
+    """Passa o relógio de 0' ao último minuto, com barra de progresso.
+
+    Os jogos já foram simulados (é instantâneo); aqui só *revelamos* o placar de
+    cada partida conforme o minuto, do jeito que o Brasfoot faz na tela de jogo.
+    """
+    segundos = VELOCIDADES.get(velocidade, VELOCIDADES[VELOCIDADE_PADRAO])
+    final = minuto_final(placares)
+    if not placares or segundos <= 0 or final <= 0:
+        return
+
+    marcos = passos(final)
+    atraso = segundos / max(1, len(marcos))
+    sorteio = st.session_state.get("sorteio_rodada")
+
+    barra = st.progress(0.0, text=f"⏱️ {relogio(0)} · rodada {rodada}")
+    painel = st.empty()
+    for minuto in marcos:
+        barra.progress(
+            min(1.0, minuto / final),
+            text=f"⏱️ {relogio(minuto)} · rodada {rodada}",
+        )
+        painel.markdown(
+            html_ao_vivo(
+                placares,
+                minuto,
+                meu_time=time.nome,
+                rodada=rodada,
+                sorteio=sorteio,
+                final=final,
+            ),
+            unsafe_allow_html=True,
+        )
+        _time.sleep(atraso)
+
+    barra.progress(1.0, text="✅ Rodada encerrada — confira os placares abaixo")
+    painel.markdown(
+        html_ao_vivo(
+            placares,
+            final,
+            meu_time=time.nome,
+            rodada=rodada,
+            sorteio=sorteio,
+            final=final,
+        ),
+        unsafe_allow_html=True,
+    )

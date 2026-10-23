@@ -25,7 +25,7 @@ python shots.py           # screenshots das telas (app rodando + playwright)
 ## Testes
 
 ```bash
-pytest                          # suíte completa (68 testes, ~5 s)
+pytest                          # suíte completa (80 testes, ~8 s)
 pytest -k piramide              # só um arquivo/tema
 pytest -v                       # nome de cada teste
 BRASFOOT_SEED=1234 pytest       # reproduz a semente usada na investigação

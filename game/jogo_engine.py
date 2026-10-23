@@ -18,7 +18,7 @@ import random
 from typing import ClassVar
 
 from game import financas
-from game.modelos import Partida, Time
+from game.modelos import Gol, Partida, Time
 
 
 class MatchEngine:
@@ -267,15 +267,27 @@ class MatchEngine:
 
         # Assistência
         assist_str = ""
+        assistente_nome = ""
         if meias and random.random() < 0.65:
             assistente = random.choice([m for m in meias if m != goleador] or meias)
             assistente.assistencias += 1
             assist_str = f" (assist: {assistente.nome})"
+            assistente_nome = assistente.nome
 
         if time_atk.nome == partida.time_casa:
             partida.gols_casa += 1
         else:
             partida.gols_fora += 1
+
+        # Guarda o gol com minuto: é o que permite a tela "rodar o relógio".
+        partida.gols.append(
+            Gol(
+                minuto=minuto,
+                time=time_atk.nome,
+                jogador=goleador.nome,
+                assistencia=assistente_nome,
+            )
+        )
 
         return (
             f"⚽🎉 {minuto}' - GOOOL! {goleador.nome} ({time_atk.sigla})!{assist_str}"

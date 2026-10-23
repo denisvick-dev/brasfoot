@@ -618,6 +618,107 @@ hr{ border-color:var(--line); }
     font-size:.72rem;
     margin:0 .18rem;
 }
+
+/* ---------- rodada ao vivo (relógio) ---------- */
+.ao-vivo{
+    background:linear-gradient(180deg,#0B1F17,#0E2A1E);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:.7rem .8rem .8rem;
+    margin:.2rem 0 1rem;
+    box-shadow:var(--shadow-sm);
+}
+.av-topo{
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+    flex-wrap:wrap;
+    padding:.1rem .15rem .6rem;
+    border-bottom:1px dashed rgba(255,255,255,.14);
+}
+.av-relogio{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:1.7rem;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+    color:#8DF0B6;
+    letter-spacing:.01em;
+}
+.av-legenda{
+    font-size:.78rem;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:#9FBDAE;
+}
+.av-fim{ flex:1 1 auto; }
+.av-chip{
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:#C9E7D6;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:999px;
+    padding:.2rem .55rem;
+    font-variant-numeric:tabular-nums;
+}
+.av-corpo{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,2.1fr);
+    gap:.7rem;
+    padding-top:.7rem;
+}
+.av-corpo > .av-lista:only-child{ grid-column:1/-1; }
+@media(max-width:820px){ .av-corpo{ grid-template-columns:1fr; } }
+.av-destaque{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:12px;
+    padding:.7rem .8rem;
+    text-align:center;
+}
+.av-placar{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:2.1rem;
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+    color:#FFFFFF;
+}
+.av-placar i{
+    font-style:normal;
+    font-size:1rem;
+    font-weight:600;
+    color:#8DF0B6;
+    margin:0 .45rem;
+}
+.av-times{
+    margin-top:.25rem;
+    font-size:.8rem;
+    font-weight:700;
+    color:#C9E7D6;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.av-evento{
+    margin-top:.5rem;
+    font-size:.74rem;
+    color:#9FBDAE;
+    min-height:1.1rem;
+}
+.av-lista{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
+    gap:.6rem;
+}
+.av-lista .placar-bloco{ box-shadow:none; }
+.av-lista .placar-linha{ font-size:.79rem; }
+.placar-linha.destaque{
+    background:rgba(22,163,74,.10);
+    font-weight:700;
+}
 </style>
 """,
         unsafe_allow_html=True,

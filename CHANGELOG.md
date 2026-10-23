@@ -3,6 +3,34 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 O projeto usa versionamento semântico.
 
+## [2.2.0] — 2026-10-23
+
+### Adicionado
+
+- **Rodada ao vivo, com relógio**: ao simular, a tela mostra o tempo correndo de
+  `0'` a `90'+` numa barra de progresso, com os gols aparecendo no minuto em que
+  aconteceram — jogo do seu clube em destaque e os demais jogos da rodada
+  atualizando junto, no estilo Brasfoot.
+- **Velocidade do relógio** na tela de jogo: `⏩ Rápida` (2 s), `▶️ Normal`
+  (5 s) e `🐢 Detalhada` (10 s). A simulação em si continua instantânea; o que
+  muda é quanto tempo a revelação dura.
+- **Sorteio da rodada**: cada simulação sorteia um número (`Sorteio #a3f9c2`),
+  mostrado na tela e usado como semente do motor. Serve para dois fins: deixar
+  claro que **os resultados são sorteados a cada rodada** e permitir reproduzir
+  exatamente uma rodada estranha.
+- `Partida.gols` (`Gol`: minuto, clube, jogador e assistência) e
+  `Partida.placar_ate(minuto)`, base do replay com relógio.
+- `ui/ao_vivo.py` com as funções puras do relógio (minuto final, passos da
+  animação, placar por minuto e o HTML do painel).
+- 12 testes novos (80 no total): relógio, acréscimos, placar revelado aos
+  poucos, sorteio diferente a cada rodada e um teste que garante que o placar
+  não se repete sempre.
+
+### Alterado
+
+- `ui/jogar.py` não usa mais o "sleep" de 0,7 s para a barra não piscar: a
+  própria animação do relógio preenche o tempo.
+
 ## [2.1.0] — 2026-10-22
 
 ### Adicionado
