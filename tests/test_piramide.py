@@ -50,3 +50,16 @@ def test_acesso_e_descenso_entre_series(banco):
 def test_piramide_precisa_de_clubes():
     with pytest.raises(ValueError):
         Piramide([])
+
+
+def test_supercopa_sai_da_agenda_depois_de_disputada(banco):
+    """Depois da Supercopa o clube não tem 'próximo jogo' — a temporada fechou."""
+    p = Piramide(banco, temporada=2026)
+    p.simular_restante()
+
+    if p.supercopa is None or p.supercopa_times is None:
+        return  # cenário sem Supercopa: nada a checar
+
+    casa, fora = p.supercopa_times
+    for clube in (casa, fora):
+        assert p.proximo_jogo(clube.nome) is None

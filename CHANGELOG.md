@@ -3,6 +3,43 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 O projeto usa versionamento semântico.
 
+## [2.4.0] — 2026-10-23
+
+### Adicionado
+
+- **Ranking de pontos acumulado** (`game/ranking.py` + `ui/ranking.py`), com
+  três abas: **Acumulado** (pontos de todos os clubes temporada após temporada,
+  com jogos, V/E/D, gols, média por temporada e títulos), **Temporada atual**
+  (todos os clubes do ano numa tabela só, somando as quatro divisões) e
+  **Temporadas** (histórico com campeão brasileiro e da Copa em cada ano).
+- O ranking é alimentado ao clicar em **🔄 Nova Temporada** — vale tanto no
+  jogo principal (pirâmide) quanto no campeonato avulso — e não duplica a
+  temporada se o botão for clicado duas vezes.
+- Entrada **📈 Ranking** no menu lateral.
+
+### Alterado
+
+- **Visual do jogo**: novo cabeçalho `hero()` (com as **cores do clube**, escudo
+  em destaque e fileira de etiquetas) usado em Painel, Jogar, Elenco, Tática,
+  Mercado, Classificações, Calendário, Resultados, Notícias, Criador, Competição
+  e na tela inicial.
+- **Tabelas**: cabeçalho fixo ao rolar, linhas zebradas, destaque do seu clube
+  com filete verde e medalhas 🥇🥈🥉 nas três primeiras posições do ranking.
+- **Barra de status** ganhou a moral do elenco e uma **linha de progresso da
+  temporada** na base.
+- **Estado vazio** padronizado (`.vazio`) para telas sem dados ainda.
+- Cartões de estatística com brilho na cor de destaque e leve elevação no hover;
+  navegação lateral com marcador dourado no item ativo.
+
+### Corrigido
+
+- **Supercopa ficava presa na agenda**: depois de disputada, `Piramide.
+  proximo_jogo()` continuava devolvendo o jogo da Supercopa, então a tela de
+  jogo nunca chegava ao resumo de fim de temporada (o botão de nova temporada
+  não aparecia). Agora a Supercopa só aparece enquanto não foi jogada.
+- Clicar em 🔄 Nova Temporada com o mercado ainda não criado quebrava a tela
+  (`None.atualizar_mercado`).
+
 ## [2.3.0] — 2026-10-23
 
 ### Adicionado

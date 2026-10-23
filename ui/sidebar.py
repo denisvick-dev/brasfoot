@@ -88,6 +88,7 @@ def sidebar():
             "mercado": "🏪 Mercado",
             "financas": "💰 Finanças",
             "resultados": "📊 Resultados",
+            "ranking": "📈 Ranking",
             "noticias": "📰 Notícias",
             "criador": "🛠️ Criador",
         }

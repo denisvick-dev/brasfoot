@@ -36,18 +36,14 @@ from game.criador import (
 )
 from game.escudos import imagem as escudo_img
 from game.modelos import Time
-from ui.apoio import formatar_dinheiro, get_meu_time, get_piramide, secao
+from ui.apoio import formatar_dinheiro, get_meu_time, get_piramide, hero, secao
 
 
 def tela_criador():
-    st.markdown(
-        """
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🛠️ Criador</h1>
-        <p>Monte seus próprios clubes, jogadores e campeonatos — tudo salvo em JSON.</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Criador",
+        "Monte seus próprios clubes, jogadores e campeonatos — tudo salvo em JSON.",
+        kicker="🛠️ Editor",
     )
 
     tab_clube, tab_jog, tab_camp, tab_dados = st.tabs(

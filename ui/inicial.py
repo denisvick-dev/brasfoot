@@ -13,19 +13,22 @@ from game.campeonato import League
 from game.escudos import imagem as escudo_img
 from game.mercado import Market
 from game.piramide import Piramide
-from ui.apoio import formatar_dinheiro, secao
+from ui.apoio import formatar_dinheiro, hero, secao
 
 
 def tela_inicial():
-    st.markdown(
-        """
-    <div class="hero">
-        <h1>⚽ BRASFOOT</h1>
-        <p>Gerenciador de futebol brasileiro — escolha seu clube, monte a equipe
-        e busque o título do Brasileirão.</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "BRASFOOT",
+        "Gerenciador de futebol brasileiro — escolha seu clube, monte a equipe "
+        "e busque o título do Brasileirão.",
+        kicker="⚽ Temporada 2026",
+        emoji="",
+        chips=(
+            "156 clubes",
+            "4 divisões",
+            "Copa do Brasil",
+            "Regionais + Supercopa",
+        ),
     )
 
     # banco completo (156 clubes): as quatro divisões jogam ao mesmo tempo

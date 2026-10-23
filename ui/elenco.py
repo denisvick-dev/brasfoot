@@ -4,7 +4,6 @@ Tela do elenco: jogadores, salários, lesões e suspensões.
 
 import streamlit as st
 
-from game.escudos import imagem as escudo_img
 from game.modelos import Jogador
 from ui.apoio import (
     badge_overall,
@@ -12,6 +11,7 @@ from ui.apoio import (
     cor_posicao,
     formatar_dinheiro,
     get_meu_time,
+    hero,
     secao,
 )
 
@@ -22,15 +22,17 @@ def tela_elenco():
         st.error("Não foi possível encontrar o time selecionado.")
         return
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">👥 Elenco · {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
-        <p>{len(time.jogadores)} jogadores · overall {time.overall_time} ·
-        valor de elenco {formatar_dinheiro(time.valor_elenco)}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        time.nome,
+        f"{len(time.jogadores)} jogadores · overall {time.overall_time} · "
+        f"valor de elenco {formatar_dinheiro(time.valor_elenco)}",
+        kicker="👥 Elenco",
+        time=time,
+        chips=(
+            f"⭐ overall {time.overall_time}",
+            f"💼 folha {formatar_dinheiro(sum(j.salario for j in time.jogadores))}",
+            f"📋 {time.formacao}",
+        ),
     )
 
     col1, col2, col3, col4 = st.columns(4)

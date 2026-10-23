@@ -764,6 +764,121 @@ hr{ border-color:var(--line); }
     .ao-vivo.gol-agora{ animation:none; }
     .placar-linha.gol-agora{ background:rgba(220,38,38,.35); }
 }
+
+/* ============================================================
+   Identidade visual 3.0 — hero com cores do clube, tabelas e ranking
+   ============================================================ */
+
+/* ---------- hero ---------- */
+.hero{
+    background:linear-gradient(120deg,#065F46 0%,#16A34A 55%,#4ADE80 100%);
+    padding:1.7rem 1.8rem;
+}
+.hero-cor{
+    background:linear-gradient(120deg, var(--hero-cor,#F5B301) 0%, #7C2D12 100%);
+}
+.hero-clube{
+    background:
+        linear-gradient(120deg, var(--c1,#065F46) 0%, var(--c2,#16A34A) 45%, #07281A 100%);
+    box-shadow:0 26px 55px -32px rgba(0,0,0,.85), inset 0 0 0 999px rgba(0,0,0,.14);
+}
+.hero-clube::before{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 55%);
+    pointer-events:none;
+}
+.hero-kicker{
+    position:relative; z-index:2;
+    font-family:var(--font-ui); font-size:.72rem; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.82); margin-bottom:.35rem;
+}
+.hero h1{ position:relative; z-index:2; display:flex; align-items:center; gap:.6rem; }
+.hero-crest{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:46px; height:46px; border-radius:12px; flex:0 0 auto;
+    background:rgba(255,255,255,.94);
+    box-shadow:0 6px 16px -8px rgba(0,0,0,.8);
+}
+.hero-crest img{ width:34px; height:34px; object-fit:contain; }
+.hero p{ position:relative; z-index:2; max-width:70ch; }
+.hero-chips{
+    position:relative; z-index:2;
+    display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.85rem;
+}
+.hero-chip{
+    font-family:var(--font-ui); font-size:.74rem; font-weight:700;
+    letter-spacing:.02em; color:#F2FFF7;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px; padding:.22rem .6rem;
+    backdrop-filter:blur(4px);
+}
+
+/* ---------- tabelas: mais legíveis ---------- */
+.tbl thead th{
+    position:sticky; top:0; z-index:2;
+    backdrop-filter:blur(6px);
+}
+.tbl tbody tr:nth-child(even) td{ background:#FBFDFC; }
+.tbl tbody tr:hover td{ background:#F2FBF5; }
+.tbl tbody tr.me td{ background:#EAF7EF; }
+.tbl tbody tr.me td:first-child{ box-shadow:inset 3px 0 0 var(--brand); }
+.tbl td b{ font-weight:800; }
+.tbl-rank td{ padding-top:.5rem; padding-bottom:.5rem; }
+.rank-div{
+    margin-left:.45rem; font-family:var(--font-ui); font-size:.66rem;
+    font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-3); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:999px;
+    padding:.05rem .35rem; vertical-align:.08em;
+}
+
+/* ---------- estado vazio ---------- */
+.vazio{
+    text-align:center; padding:2.2rem 1.4rem;
+    background:var(--surface); border:1px dashed #CFDED5;
+    border-radius:var(--radius); margin:.4rem 0 1rem;
+}
+.vazio .vazio-ico{ font-size:2rem; line-height:1; margin-bottom:.4rem; }
+.vazio b{ font-family:var(--font-display); font-size:1.05rem; }
+.vazio p{ color:var(--ink-2); font-size:.9rem; margin:.35rem auto 0; max-width:56ch; }
+
+/* ---------- sidebar: navegação com estado ativo claro ---------- */
+[data-testid="stSidebar"] .stButton > button[kind="primary"]{
+    background:linear-gradient(135deg,#16A34A,#0B5D3B) !important;
+    box-shadow:inset 3px 0 0 #F5B301, 0 8px 18px -12px rgba(6,95,70,.9);
+}
+[data-testid="stSidebar"] .stButton > button:hover{
+    transform:translateX(2px);
+}
+[data-testid="stSidebar"] [data-testid="stMetric"]{
+    background:rgba(255,255,255,.75);
+}
+
+/* ---------- cartões de estatística com brilho ---------- */
+.stat{ transition:transform .14s ease, box-shadow .18s ease; }
+.stat:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
+.stat::after{
+    content:""; position:absolute; right:-30px; top:-30px;
+    width:90px; height:90px; border-radius:50%;
+    background:radial-gradient(circle, color-mix(in srgb, var(--accent,#16A34A) 18%, transparent), transparent 70%);
+}
+
+/* ---------- barra de status: progresso da temporada ---------- */
+.status-bar{ position:relative; flex-wrap:wrap; padding-bottom:.75rem; }
+.status-bar .sb-progress{
+    position:absolute; left:0; right:0; bottom:0; height:4px;
+    background:rgba(255,255,255,.12);
+    border-radius:0 0 var(--radius) var(--radius);
+    overflow:hidden;
+}
+.status-bar .sb-progress > i{
+    display:block; height:100%;
+    background:linear-gradient(90deg,#4ADE80,#F5B301);
+    border-radius:0 99px 99px 0;
+    transition:width .4s ease;
+}
 </style>
 """,
         unsafe_allow_html=True,
