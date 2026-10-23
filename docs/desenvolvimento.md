@@ -25,7 +25,7 @@ python shots.py           # screenshots das telas (app rodando + playwright)
 ## Testes
 
 ```bash
-pytest                          # suíte completa (67 testes, ~4 s)
+pytest                          # suíte completa (68 testes, ~5 s)
 pytest -k piramide              # só um arquivo/tema
 pytest -v                       # nome de cada teste
 BRASFOOT_SEED=1234 pytest       # reproduz a semente usada na investigação
@@ -38,8 +38,12 @@ classificação falhava de vez em quando — o que apareceu como "CI vermelho se
 motivo". Para caçar testes frágeis, varra várias sementes:
 
 ```bash
-for s in $(seq 1 50); do BRASFOOT_SEED=$s pytest -q || break; done
+bash scripts/testar_sementes.sh                 # sementes 1..5 (o que o CI roda)
+bash scripts/testar_sementes.sh $(seq 1 50)     # varredura longa
 ```
+
+O script quebra em anotação do GitHub (`::error title=Semente N::teste`) quando
+uma semente falha, então dá para ver no PR qual teste caiu sem abrir o log.
 
 A suíte cobre modelos, banco de clubes e escudos, campeonato, copa, pirâmide
 (acesso/descenso), motor, mercado, finanças/rotina, diretoria,

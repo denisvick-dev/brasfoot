@@ -34,9 +34,4 @@ jobs:
           pytest
       - name: Testes com outras sementes (3.11)
         if: matrix.python-version == '3.11'
-        run: |
-          for s in 1 2 3 4 5; do
-            echo "::group::semente $s"
-            BRASFOOT_SEED=$s pytest -q
-            echo "::endgroup::"
-          done
+        run: bash scripts/testar_sementes.sh 1 2 3 4 5

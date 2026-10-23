@@ -23,7 +23,8 @@ python main.py 156 1   # temporada completa, sem exceção
 ```
 
 O CI repete os três primeiros em Python 3.11 e 3.12, e roda a suíte também
-com cinco sementes diferentes para pegar teste que depende de sorte.
+com cinco sementes diferentes (`bash scripts/testar_sementes.sh`) para pegar
+teste que depende de sorte.
 
 Os testes são determinísticos: `tests/conftest.py` semeia o `random` global
 com `BRASFOOT_SEED` (padrão `2026`). Se um teste falhar no CI, rode
