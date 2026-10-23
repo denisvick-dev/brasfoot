@@ -80,10 +80,28 @@ preenchida no mesmo ponto em que o placar é incrementado. Com ela a interface
 consegue "rejogar" o jogo com relógio, sem precisar simular de novo:
 
 ```python
-partida.placar_ate(63)   # (2, 1) — quantos gols já tinham saído até o 63'
-partida.gols_ate(63)     # lista de Gol até o minuto
+partida.placar_ate(63)  # (2, 1) — quantos gols já tinham saído até o 63'
+partida.gols_ate(63)  # lista de Gol até o minuto
 ```
 
 `ui/ao_vivo.py` usa isso para desenhar o painel do relógio (0' a 90'+), e o
 número do `Sorteio #` mostrado na tela é a semente usada pelo motor naquela
 rodada — então ele reproduz exatamente a mesma rodada se você precisar.
+
+## Som e pisca do gol
+
+`ui/sons.py` sintetiza o som de gol em código (torcida filtrada + acorde de
+trompa com vibrato, 1,35 s a 22 kHz) e devolve como `data:audio/wav;base64,…`.
+O painel ao vivo embute um `<audio autoplay>` escondido **só no quadro em que
+saiu gol**; o `id` muda a cada minuto (`som-gol-37`) para o navegador recriar o
+elemento e tocar de novo.
+
+O pisca vermelho usa `Partida.gols`: um jogo é considerado "gol agora" se marcou
+nos últimos `JANELA_FLASH` (3) minutos de jogo, e recebe a classe `.gol-agora`.
+Quem desliga animações no sistema (`prefers-reduced-motion`) vê o destaque
+estático, sem piscar.
+
+> Navegadores bloqueiam autoplay com som até a página receber uma interação.
+> Como a rodada só acontece depois do clique em **⚽ SIMULAR RODADA**, na prática
+> o áudio toca; se o navegador estiver em modo restrito, o pisca continua
+> funcionando.

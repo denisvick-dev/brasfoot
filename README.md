@@ -33,9 +33,10 @@ python diagnostico.py       # calibragem do motor (gols, empates, mando de campo
 - **Elenco e tática**: formação, estilo de jogo (retranca ↔ ataque total),
   escalação manual ou automática, energia, cartões, lesões e suspensões.
 - **Jogar rodada a rodada**, com **relógio de 0' a 90'+ em barra de progresso**
-  (os gols aparecem no minuto em que saíram), narração do jogo e **todos os
-  placares da rodada** na mesma tela, separados por competição. Cada simulação
-  sorteia resultados novos — o `Sorteio #` fica visível na tela.
+  (os gols aparecem no minuto em que saíram, **piscando em vermelho** com
+  **som de gol**), narração do jogo e **todos os placares da rodada** na mesma
+  tela, separados por competição. Cada simulação sorteia resultados novos — o
+  `Sorteio #` fica visível na tela.
 - **Quatro divisões** com regulamentos diferentes (turno e returno, turno único
   e mata-mata), acesso e descenso ao fim da temporada.
 - **Copa do Brasil**, **regionais** e **Supercopa** no mesmo calendário.
@@ -108,7 +109,7 @@ tests/                 suíte pytest
 pip install -r requirements-dev.txt
 ruff check .      # lint
 pyright .         # tipos (mesmo resultado do Pylance)
-pytest            # 80 testes (determinístico)
+pytest            # 93 testes (determinístico)
 ```
 
 O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.

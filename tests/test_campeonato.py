@@ -46,7 +46,9 @@ def test_empate_em_pontos_desempata_por_vitorias_depois_por_saldo(times8):
     vitorias = (3, 3, 2, 2)
     gols_pro = (4, 2, 8, 6)
     gols_contra = (3, 3, 5, 3)
-    for time, p, v, gp, gc in zip(alvo, pontos, vitorias, gols_pro, gols_contra, strict=True):
+    for time, p, v, gp, gc in zip(
+        alvo, pontos, vitorias, gols_pro, gols_contra, strict=True
+    ):
         time.pontos, time.vitorias = p, v
         time.gols_pro = gp
         time.gols_contra = gc
