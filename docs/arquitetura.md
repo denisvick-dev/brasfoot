@@ -8,9 +8,11 @@
   simula a rodada com barra de progresso (`Piramide.simular_rodada(progresso=…)`),
   roda o relógio com `ui/ao_vivo.py` (0' a 90'+, com barra e placares aparecendo
   aos poucos, com o gol piscando em vermelho e o som de gol) e depois monta o
-  quadro com os placares de todas as competições.
+  quadro com os placares de todas as competições. `ui/ranking.py` mostra o
+  acumulado e registra cada temporada fechada.
 - `game/` — simulação, sem Streamlit:
   - `modelos.py` (Jogador, Time, Partida, Gol, Noticia)
+  - `ranking.py` (pontos acumulados por clube entre temporadas)
   - `jogo_engine.py` (motor da partida)
   - `campeonato.py` / `divisao.py` / `copa.py` / `regional.py` / `piramide.py`
     (competições e temporada)

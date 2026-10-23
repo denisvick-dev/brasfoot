@@ -4,18 +4,17 @@ Central de notícias do jogo.
 
 import streamlit as st
 
+from ui.apoio import hero
+
 
 def tela_noticias():
     league = st.session_state.league
 
-    st.markdown(
-        """
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">📰 Notícias</h1>
-        <p>Tudo o que acontece no Brasileirão</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Notícias",
+        "Tudo o que acontece no Brasileirão",
+        kicker="📰 Central de notícias",
+        chips=(f"{len(league.noticias)} publicadas",),
     )
 
     if not league.noticias:

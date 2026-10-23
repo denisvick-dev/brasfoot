@@ -14,6 +14,7 @@ PAGINAS = [
     "classificacao",
     "calendario",
     "resultados",
+    "ranking",
     "mercado",
     "financas",
     "noticias",
@@ -188,3 +189,113 @@ def test_sem_som_ligado_nao_embute_audio(monkeypatch):
     at.run()
     assert not at.exception
     assert quadros and not any(quadros)
+
+
+def test_tela_de_ranking_abre_com_pontos_da_temporada():
+    from game.banco_dados import criar_times
+    from game.campeonato import League
+
+    times = criar_times(8, semente=3)
+    liga = League(times)
+    for _ in range(3):
+        liga.simular_rodada("")
+
+    at = AppTest.from_file(str(APP), default_timeout=1800)
+    at.session_state["game_started"] = True
+    at.session_state["times"] = times
+    at.session_state["league"] = liga
+    at.session_state["meu_time"] = times[0].nome
+    at.session_state["piramide"] = None
+    at.session_state["pagina"] = "ranking"
+    at.run()
+
+    assert not at.exception
+    textos = " ".join(m.value for m in at.markdown)
+    assert "Ranking de pontos" in textos
+    assert "Pontos da temporada" in textos
+    # os clubes da temporada aparecem na tabela do ano
+    assert times[1].nome in textos
+
+
+def test_fechar_temporada_alimenta_o_ranking():
+    """Clicar em Nova Temporada soma a campanha no ranking acumulado."""
+    from game.banco_dados import criar_times
+    from game.campeonato import League
+    from game.ranking import Ranking
+
+    times = criar_times(8, semente=3)
+    liga = League(times)
+    while liga.rodada_atual < liga.total_rodadas:
+        liga.simular_rodada("")
+
+    at = AppTest.from_file(str(APP), default_timeout=1800)
+    at.session_state["game_started"] = True
+    at.session_state["times"] = times
+    at.session_state["league"] = liga
+    at.session_state["meu_time"] = times[0].nome
+    at.session_state["piramide"] = None
+    at.session_state["ranking"] = Ranking()
+    at.session_state["pagina"] = "jogar"
+    at.run()
+    assert not at.exception
+
+    botao = next(b for b in at.button if "Nova Temporada" in b.label)
+    botao.click()
+    at.run()
+    assert not at.exception
+
+    ranking = at.session_state["ranking"]
+    assert isinstance(ranking, Ranking)
+    assert ranking.total_temporadas == 1
+    assert len(ranking.linhas) == 8
+    linha = ranking.linha(times[0].nome)
+    assert linha is not None and linha.temporadas == 1
+    assert linha.pontos > 0
+
+
+def test_fechar_temporada_na_piramide_alimenta_o_ranking():
+    """Na pirâmide (jogo principal) o ranking também acumula ao fechar o ano."""
+    from game.banco_dados import criar_times
+    from game.piramide import Piramide
+    from game.ranking import Ranking
+
+    times = criar_times(20, semente=3)
+    piramide = Piramide(times, temporada=2026)
+    piramide.simular_restante()
+
+    at = AppTest.from_file(str(APP), default_timeout=1800)
+    at.session_state["game_started"] = True
+    at.session_state["times"] = times
+    at.session_state["piramide"] = piramide
+    at.session_state["league"] = piramide.league_de(times[0].nome)
+    at.session_state["meu_time"] = times[0].nome
+    at.session_state["ranking"] = Ranking()
+    at.session_state["pagina"] = "jogar"
+    at.run()
+    assert not at.exception
+
+    # a temporada pode deixar a Supercopa pendente: simula até aparecer o botão
+    for _ in range(4):
+        fim = [b for b in at.button if "Nova Temporada" in b.label]
+        if fim:
+            break
+        simular = [b for b in at.button if "SIMULAR" in b.label]
+        assert simular, "esperava o botão de nova temporada ou de simular"
+        at.session_state["velocidade_rodada"] = "⏩ Rápida"
+        simular[0].click()
+        at.run()
+        assert not at.exception
+
+    fim = [b for b in at.button if "Nova Temporada" in b.label]
+    assert fim, "a temporada terminou e o botão de nova temporada não apareceu"
+    fim[0].click()
+    at.run()
+    assert not at.exception
+
+    ranking = at.session_state["ranking"]
+    assert ranking.total_temporadas == 1
+    registrada = ranking.ultima_temporada()
+    assert registrada is not None
+    assert registrada.campeao  # campeão brasileiro anotado na temporada
+    assert registrada.temporada == 2026
+    assert any(linha.titulos >= 1 for linha in ranking.ordenar())

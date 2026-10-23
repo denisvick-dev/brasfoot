@@ -3,6 +3,7 @@ Funções de apoio: leitura do estado do jogo, formatação e tabelas.
 """
 
 import datetime as dt
+from collections.abc import Sequence
 
 import streamlit as st
 
@@ -38,6 +39,10 @@ def init_game():
         st.session_state.ultima_rodada = []
     if "pagina" not in st.session_state:
         st.session_state.pagina = "inicio"
+    if "ranking" not in st.session_state:
+        from game.ranking import Ranking
+
+        st.session_state.ranking = Ranking()
 
 
 def get_meu_time() -> Time | None:
@@ -68,7 +73,11 @@ def barra_status() -> None:
         <div class="sb-item">Série <b>{divisao_do_jogador()}</b></div>
         <div class="sb-item">Rodada <b>{league.rodada_atual}/{league.total_rodadas}</b></div>
         <div class="sb-item">Posição <b>{posicao_html}</b></div>
+        <div class="sb-item">🎭 Moral <b>{time.moral_time}%</b></div>
         <div class="sb-item sb-right">💰 Caixa <b>{formatar_dinheiro(time.financas)}</b></div>
+        <div class="sb-progress">
+            <i style="width:{100 * league.rodada_atual / max(1, league.total_rodadas):.1f}%"></i>
+        </div>
     </div>
     """,
         unsafe_allow_html=True,
@@ -129,6 +138,54 @@ def secao(titulo: str, kicker: str = ""):
     """Título de seção padronizado."""
     k = f'<span class="kicker">{kicker}</span>' if kicker else ""
     st.markdown(f'<div class="sec-title">{k}{titulo}</div>', unsafe_allow_html=True)
+
+
+def hero(
+    titulo: str,
+    subtitulo: str = "",
+    *,
+    kicker: str = "",
+    time: Time | None = None,
+    emoji: str = "",
+    chips: Sequence[str] = (),
+    cor: str = "",
+) -> None:
+    """Cabeçalho grande da tela (estilo Brasfoot).
+
+    Com `time`, o fundo usa as cores do clube e o escudo aparece em destaque;
+    sem ele, vale o verde padrão (ou a cor passada em `cor`, ex.: dourado).
+    `chips` vira a fileira de etiquetas embaixo do subtítulo.
+    """
+    classes = "hero"
+    estilo = ""
+    if time is not None:
+        classes += " hero-clube"
+        estilo = f"--c1:{time.cor_primaria};--c2:{time.cor_secundaria};"
+    elif cor:
+        classes += " hero-cor"
+        estilo = f"--hero-cor:{cor};"
+
+    escudo = (
+        f'<span class="hero-crest">{escudo_img(time.sigla, time.escudo_emoji)}</span>'
+        if time is not None
+        else ""
+    )
+    prefixo = f"{emoji} " if emoji else ""
+    k = f'<div class="hero-kicker">{kicker}</div>' if kicker else ""
+    p = f"<p>{subtitulo}</p>" if subtitulo else ""
+    chips_html = (
+        '<div class="hero-chips">'
+        + "".join(f"<span class='hero-chip'>{c}</span>" for c in chips)
+        + "</div>"
+        if chips
+        else ""
+    )
+    st.markdown(
+        f'<div class="{classes}" style="{estilo}">'
+        f"{k}<h1>{prefixo}{escudo}{titulo}</h1>{p}{chips_html}"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def stat_card(titulo: str, valor, cor: str = "#16A34A"):

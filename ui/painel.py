@@ -10,6 +10,7 @@ from ui.apoio import (
     formatar_dinheiro,
     get_meu_time,
     get_piramide,
+    hero,
     posicao_na_tabela,
     secao,
     stat_card,
@@ -25,15 +26,18 @@ def tela_painel():
     league = st.session_state.league
     pos = posicao_na_tabela(league, time.nome)
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🏠 {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
-        <p>Rodada {league.rodada_atual} de {league.total_rodadas} ·
-        {pos}º colocado · {formatar_dinheiro(time.financas)} em caixa</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        time.nome,
+        f"Rodada {league.rodada_atual} de {league.total_rodadas} · "
+        f"{pos}º colocado · {formatar_dinheiro(time.financas)} em caixa",
+        kicker=f"🏠 Painel · Série {time.divisao}",
+        time=time,
+        chips=(
+            f"🏆 {time.pontos} pts",
+            f"⚽ {time.gols_pro} pró · {time.gols_contra} contra",
+            f"🎭 moral {time.moral_time}%",
+            f"📋 {time.formacao}",
+        ),
     )
 
     col1, col2, col3, col4, col5 = st.columns(5)

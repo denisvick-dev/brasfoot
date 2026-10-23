@@ -8,7 +8,7 @@ from game.competicoes import (
     FORMATOS,
 )
 from game.escudos import imagem as escudo_img
-from ui.apoio import _html_tabela, secao
+from ui.apoio import _html_tabela, hero, secao
 from ui.jogar import _linha_do_tempo
 
 
@@ -21,15 +21,12 @@ def tela_competicao():
         )
         return
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🏆 {camp.nome}</h1>
-        <p>{FORMATOS.get(camp.formato, camp.formato)} · {len(camp.times)} times ·
-        {len(camp.resultados)} jogos disputados · {camp.progresso}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        camp.nome,
+        f"{FORMATOS.get(camp.formato, camp.formato)} · {len(camp.times)} times · "
+        f"{len(camp.resultados)} jogos disputados · {camp.progresso}",
+        kicker="🏆 Competição",
+        chips=(f"{len(camp.times)} clubes", f"{len(camp.resultados)} jogos"),
     )
 
     if camp.encerrado:

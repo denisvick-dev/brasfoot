@@ -29,6 +29,7 @@ from ui.apoio import (
     get_copa,
     get_meu_time,
     get_piramide,
+    hero,
     posicao_na_tabela,
     rodada_de,
     secao,
@@ -37,6 +38,7 @@ from ui.apoio import (
     time_por_nome,
     total_rodadas_de,
 )
+from ui.ranking import registrar_temporada_atual
 from ui.sons import som_gol_uri
 
 
@@ -90,15 +92,19 @@ def tela_jogar():
         if adversario is not None
         else "Sem jogo nesta rodada — folga"
     )
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <div class="hero-kicker">Temporada {league.temporada} · rodada {rodada_global} de {total_global}</div>
-        <h1 style="font-size:1.9rem">{escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
-        <p>{sub}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        time.nome,
+        sub,
+        kicker=(
+            f"Temporada {league.temporada} · rodada {rodada_global} de {total_global}"
+        ),
+        time=time,
+        chips=(
+            f"📅 rodada {rodada_global}/{total_global}",
+            f"🏆 {time.pontos} pts",
+            f"📊 {posicao_na_tabela(league, time.nome)}º na Série {time.divisao}",
+            f"⚽ {time.gols_pro} pró · {time.gols_contra} contra",
+        ),
     )
 
     if len(time.titulares) != 11:
@@ -418,6 +424,7 @@ def _tela_fim_temporada(time: Time, league: League):
 
     if piramide is None:
         if st.button("🔄 Nova Temporada", type="primary"):
+            registrar_temporada_atual()
             league.temporada += 1
             league.rodada_atual = 0
             league.campeonato_encerrado = False
@@ -428,7 +435,9 @@ def _tela_fim_temporada(time: Time, league: League):
             for t in league.times:
                 t.resetar_campeonato()
                 t.auto_escalar()
-            st.session_state.market.atualizar_mercado()
+            market = st.session_state.get("market")
+            if market is not None:
+                market.atualizar_mercado()
             st.rerun()
         return
 
@@ -534,6 +543,7 @@ def _tela_fim_temporada(time: Time, league: League):
             )
 
         if st.button("🔄 Nova Temporada", type="primary"):
+            registrar_temporada_atual()
             with st.spinner("Aplicando acesso e descenso..."):
                 piramide.nova_temporada()
                 st.session_state.league = piramide.league_de(time.nome) or league

@@ -5,7 +5,14 @@ Mercado de transferências: contratações e vendas.
 import streamlit as st
 
 from game.modelos import Noticia
-from ui.apoio import badge_overall, cor_posicao, formatar_dinheiro, get_meu_time, secao
+from ui.apoio import (
+    badge_overall,
+    cor_posicao,
+    formatar_dinheiro,
+    get_meu_time,
+    hero,
+    secao,
+)
 
 
 def tela_mercado():
@@ -16,15 +23,16 @@ def tela_mercado():
 
     market = st.session_state.market
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🏪 Mercado de Transferências</h1>
-        <p>Orçamento disponível: <b>{formatar_dinheiro(time.financas)}</b> ·
-        elenco: {len(time.jogadores)}/30 jogadores</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Mercado de Transferências",
+        f"Orçamento disponível: {formatar_dinheiro(time.financas)} · "
+        f"elenco: {len(time.jogadores)}/30 jogadores",
+        kicker="🏪 Mercado",
+        time=time,
+        chips=(
+            f"💰 {formatar_dinheiro(time.financas)}",
+            f"👥 {len(time.jogadores)} jogadores",
+        ),
     )
 
     tab1, tab2, tab3 = st.tabs(["🛒 Comprar", "💸 Vender", "📊 Jogadores Livres"])

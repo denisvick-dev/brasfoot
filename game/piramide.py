@@ -443,7 +443,15 @@ class Piramide:
             prox = self.copa.proximo_jogo(nome_time)
             if prox is not None and prox[0] == rodada:
                 return ("Copa do Brasil", prox[0], prox[1], prox[2])
-        if self._garantir_supercopa() and self.supercopa_times is not None:
+        # Só é "próximo jogo" enquanto a Supercopa não foi disputada: depois
+        # disso o clube não tem mais jogo e a temporada está encerrada para ele
+        # (antes a tela ficava presa na Supercopa para sempre, sem chegar ao
+        # resumo de fim de temporada).
+        if (
+            self.supercopa is None
+            and self._garantir_supercopa()
+            and self.supercopa_times is not None
+        ):
             casa, fora = self.supercopa_times
             if nome_time in (casa.nome, fora.nome):
                 return ("Supercopa do Brasil", rodada, casa.nome, fora.nome)

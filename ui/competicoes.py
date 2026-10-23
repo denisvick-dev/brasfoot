@@ -29,6 +29,7 @@ from ui.apoio import (
     get_meu_time,
     get_piramide,
     get_regionais,
+    hero,
     jogos_do_time,
     legenda_zonas,
     linhas_classificacao,
@@ -283,15 +284,17 @@ def tela_classificacao():
         else league.rodada_atual
     )
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">🏆 Classificações</h1>
-        <p>Temporada {league.temporada} · {len(divisoes)} divisões ·
-        rodada geral {rodada_geral}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Classificações",
+        f"Temporada {league.temporada} · {len(divisoes)} divisões · "
+        f"rodada geral {rodada_geral}",
+        kicker="🏆 Tabelas",
+        emoji="",
+        chips=(
+            f"{len(divisoes)} divisões",
+            f"rodada {rodada_geral}",
+            "Copa do Brasil" if get_copa() is not None else "sem copa",
+        ),
     )
 
     rotulos = [f"🏆 {NOMES_DIVISAO.get(d, d)}" for d in divisoes]
@@ -448,15 +451,11 @@ def tela_calendario():
     minha = divisao_do_jogador()
     piramide = get_piramide()
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">📅 Calendário</h1>
-        <p>Temporada {piramide.temporada if piramide else st.session_state.league.temporada} ·
-        uma rodada por semana · todas as divisões</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Calendário",
+        f"Temporada {piramide.temporada if piramide else st.session_state.league.temporada}"
+        " · uma rodada por semana · todas as divisões",
+        kicker="📅 Temporada",
     )
 
     copa = get_copa()
@@ -717,14 +716,11 @@ def tela_resultados():
     time = get_meu_time()
     divisoes = divisoes_da_temporada()
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">📊 Resultados por Rodada</h1>
-        <p>Placares de todas as divisões na temporada {st.session_state.league.temporada}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        "Resultados por Rodada",
+        f"Placares de todas as divisões na temporada "
+        f"{st.session_state.league.temporada}",
+        kicker="📊 Rodada a rodada",
     )
 
     rotulos = [f"📊 {NOMES_DIVISAO.get(d, d)}" for d in divisoes]

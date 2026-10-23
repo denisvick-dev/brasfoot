@@ -4,9 +4,14 @@ Tela de tática: formação, estilo de jogo e escalação.
 
 import streamlit as st
 
-from game.escudos import imagem as escudo_img
 from game.modelos import Jogador, Time
-from ui.apoio import badge_overall, cor_posicao, get_meu_time, secao
+from ui.apoio import (
+    badge_overall,
+    cor_posicao,
+    get_meu_time,
+    hero,
+    secao,
+)
 
 
 def tela_tatica():
@@ -15,14 +20,16 @@ def tela_tatica():
         st.warning("Nenhum time selecionado.")
         return
 
-    st.markdown(
-        f"""
-    <div class="hero" style="padding:1.4rem 1.6rem">
-        <h1 style="font-size:1.8rem">📋 Tática · {escudo_img(time.sigla, time.escudo_emoji)} {time.nome}</h1>
-        <p>Formação {time.formacao} · estilo {_nome_estilo(time.tatica_ofensiva)}</p>
-    </div>
-    """,
-        unsafe_allow_html=True,
+    hero(
+        time.nome,
+        f"Formação {time.formacao} · estilo {_nome_estilo(time.tatica_ofensiva)}",
+        kicker="📋 Tática",
+        time=time,
+        chips=(
+            f"⚙️ agressividade {time.tatica_ofensiva}",
+            f"⭐ {time.overall_time}",
+            f"🎭 moral {time.moral_time}%",
+        ),
     )
 
     col1, col2 = st.columns([1, 1])

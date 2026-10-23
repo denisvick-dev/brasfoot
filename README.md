@@ -43,6 +43,9 @@ python diagnostico.py       # calibragem do motor (gols, empates, mando de campo
 - **Mercado de transferências**: contratar, vender, salários, valor de mercado.
 - **Finanças**: bilheteria, cota de TV, patrocínio, folha salarial, prêmios por
   posição e extrato completo de cada lançamento (tela própria no menu).
+- **Ranking de pontos acumulado**: histórico de todos os clubes (pontos, jogos,
+  V/E/D, gols, média e títulos) somando temporada após temporada, mais a tabela
+  do ano corrente com as quatro divisões juntas.
 - **Objetivo da diretoria** por série, com situação atualizada rodada a rodada.
 - **Artilharia, notícias e fim de temporada** com balanço do ano.
 
@@ -64,9 +67,10 @@ ui/                    interface Streamlit
   financas.py            caixa, folha, receitas, despesas e extrato
   criador.py             criador de clubes, jogadores e competições
   competicao.py          detalhes de competição personalizada
+  ranking.py             ranking de pontos acumulados
   noticias.py            central de notícias
 game/                  simulação (sem Streamlit)
-  modelos.py             Jogador, Time, Partida, Noticia
+  modelos.py             Jogador, Time, Partida, Gol, Noticia
   clubes.py              fichas dos 156 clubes
   banco_dados.py         elencos e consultas
   jogo_engine.py         motor de partida
@@ -79,6 +83,7 @@ game/                  simulação (sem Streamlit)
   financas.py            extrato, resumo e premiação
   rotina.py              energia, lesões, suspensões e salários entre rodadas
   diretoria.py           objetivo da diretoria por série
+  ranking.py             pontos acumulados entre temporadas
   criador.py             criação e persistência de clubes/jogadores
   escudos.py             escudos embutidos como data URI
   persistencia.py        dados/ em JSON
@@ -109,7 +114,7 @@ tests/                 suíte pytest
 pip install -r requirements-dev.txt
 ruff check .      # lint
 pyright .         # tipos (mesmo resultado do Pylance)
-pytest            # 93 testes (determinístico)
+pytest            # 108 testes (determinístico)
 ```
 
 O CI roda lint, tipos e testes em Python 3.11 e 3.12 a cada push e pull request.

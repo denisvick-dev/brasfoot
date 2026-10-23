@@ -20,6 +20,7 @@ from ui.jogar import tela_jogar
 from ui.mercado import tela_mercado
 from ui.noticias import tela_noticias
 from ui.painel import tela_painel
+from ui.ranking import tela_ranking
 from ui.sidebar import sidebar
 from ui.tatica import tela_tatica
 
@@ -32,6 +33,7 @@ TELAS = {
     "mercado": tela_mercado,
     "financas": tela_financas,
     "resultados": tela_resultados,
+    "ranking": tela_ranking,
     "noticias": tela_noticias,
     "criador": tela_criador,
     "competicao": tela_competicao,
